@@ -17,6 +17,8 @@ class ErrorActivity : AppCompatActivity() {
                 .setMessage(message)
                 .setCancelable(false)
                 .create().show()
+
+            //CIAOOOOO
         }
     }
     override fun onBackPressed() {
