@@ -1,0 +1,9 @@
+<resources>
+    <!-- Base application theme. -->
+    <style name="LoginTheme" parent="JuniorApp">
+        <!-- Primary brand color. -->
+        <item name="colorPrimaryVariant">@color/osticolor</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor" >@color/loginBack</item>
+    </style>
+</resources>

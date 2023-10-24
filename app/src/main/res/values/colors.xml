@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="osticolor">#E9D362</color>
+    <color name="osticolordark">#BFA20D</color>
+    <color name="ostitransparent">#C1E9D362</color>
+    <color name="ostilight">#DCECDA82</color>
+    <color name="bluosti">#337ab7</color>
+    <color name="bluosti_disabled">#65337AB7</color>
+    <color name="bluosti_light">#E4F3FF</color>
+    <color name="bluostiSemiSoft">#DD58A1E1</color>
+    <color name="bluostiSoft">#4D58A1E1</color>
+    <color name="bluosti_super_soft">#54A6C9E8</color>
+    <color name="bluostistrong">#093A63</color>
+    <color name="softblu">#272F24B9</color>
+    <color name="themePrimary">#FF6200EE</color>
+    <color name="darkPurple">#26007A</color>
+    <color name="loginBack">#292929</color>
+    <color name="bluostiSoBorder">#7258A1E1</color>
+    <color name="gray_timbr_online">#FFFFFF</color>
+    <color name="yellow_offline">#F0FFAC30</color>
+    <color name="light_grey">#ECECED</color>
+    <color name="green_approvato">#039E06</color>
+    <color name="red_negato">#FF4F4F</color>
+    <color name="green_approvato_light">#E5FFE5</color>
+    <color name="red_negato_light">#F4A8A8</color>
+    <color name="gray_light_menu">#CCCCCC</color>
+    <color name="red">#FF0000</color>
+    <color name="yellow_offline_light">#F0FFE299</color>
+</resources>

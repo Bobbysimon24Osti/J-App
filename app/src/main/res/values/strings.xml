@@ -1,0 +1,48 @@
+<resources>
+    <string name="app_name">J-App</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="alert_app_offline">App in modalità offline</string>
+    <string name="alert_dipendente_null_timbr">L\'utente non può timbrare non avendo un dipendente associato. \n Associare un dipendente a questo user su Juniorweb per poterlo utilizzare</string>
+    <string name="alert_dipendente_null_giust">L\'utente non può richiedere permessi non avendo un dipendente associato. \n Associare un dipendente a questo user su Juniorweb per poterlo utilizzare</string>
+    <string name="alert_no_permessi_timbratura">Non si dispone dei permessi per poter timbrare dall\'applicazione</string>
+    <string name="alert_no_permessi_workflow">Non si dispone dei permessi per poter richiedere i giustificativi dall\'applicazione</string>
+    <string name="alert_rihiesta_permesso_localizzazione">Il pemrmesso di localizzazione è necessario per rilevare il luogo della timbratura</string>
+    <string name="alert_timeout_attesa_posizione">Il dispositivo ha impiegato troppo tempo a rilevare una posizione attendibile, verrà salvata la timbratura senza posizione</string>
+    <string name="alert_licenza_offline_per_troppo">Impossibile verificare attivazione applicazione, applicazione offline per troppo tempo. \n\nConnettersi a internet e riprovare</string>
+    <string name="alert_errore_licenza_generico">Errore connessione al server, provare a chiudere e riaprire l\'applicazione, se il problema persiste contattare l\'assistenza</string>
+    <string name="alert_errore_connessione_server_attivazioni">Errore imprevisto in fase di comunicazione con il server, riprovare. \n Se il problema persiste contattare l\'assistenza clienti</string>
+    <string name="alert_compila_tutti_campi">Compilare tutti i campi richiesti</string>
+    <string name="alert_dati_errati">Dati errati, riprovare</string>
+    <string name="alert_connessione_impossibile">Impossibile connettersi al server</string>
+    <string name="alert_archivio_non_trovato">Archivio non trovato, prova a mettere \"juniorweb\" </string>
+    <string name="alert_utente_o_psw_errati">Utente o password errati</string>
+    <string name="alert_errore_rete_generico">Errore, Contattare assistenza clienti</string>
+
+    <string name="db_localita_sconosciuta">Localita sconosciuta</string>
+
+    <string name="toast_errore_localizzazione">Errore in fase di recupero posizione</string>
+    <string name="toast_successo_timbratura">Timbratura fatta con successo</string>
+    <string name="toast_timbratura_fatta_recentemente">Timbratura già fatta</string>
+
+    <string name="toast_successo_richiesta_giustificativo">Richiesta giustificazione salvata</string>
+
+    <string name="menu_timbra">Timbra da telefono</string>
+    <string name="menu_gestisci_giustificazioni">Giustificazioni da gestire</string>
+    <string name="menu_richiesta_giust">Nuova Richiesta</string>
+    <string name="menu_lista_giust">Giustificativi Richiesti</string>
+    <string name="menu_old_stamp">Vedi Timbrature</string>
+    <string name="menu_cartellino">Cartellino</string>
+    <string name="menu_file">Buste Paga/Comunicazioni</string>
+    <string name="menu_notifiche">Notifiche</string>
+    <string name="menu_account">Account</string>
+    <string name="menu_info">Info App</string>
+    <string name="menu_aggiorna">Ricerca Aggiornamenti App</string>
+    <string name="menu_exit">Chiudi Applicazione</string>
+
+    <string name="state_on_server">Online</string>
+    <string name="state_offline">Offline</string>
+
+    <string name="text_view_posizione_negata">Autorizzazione posizione non concessa</string>
+
+</resources>

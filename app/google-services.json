@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "810238596011",
+    "project_id": "j-app-27b01",
+    "storage_bucket": "j-app-27b01.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:810238596011:android:473e0bb5beeaa0c33b38ee",
+        "android_client_info": {
+          "package_name": "com.osti.juniorapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "810238596011-92i23cv915trrr9jlsft2udv06gn564t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA6Zo486rKUaihspHzpDTZ_Ca9Kw2M49_c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "810238596011-92i23cv915trrr9jlsft2udv06gn564t.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
