@@ -14,6 +14,9 @@ interface GiustificheRecordDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(datas: GiustificheRecord)
 
+    @Query("DELETE FROM giustifiche_record WHERE 1=1")
+    fun clearGiust()
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun multipleInsert(datas:List<GiustificheRecord>)
 
@@ -41,8 +44,20 @@ interface GiustificheRecordDao {
     @Query("select * from giustifiche_record where id = :id")
     fun getGiustificaRecordByLocalId (id:Long) : GiustificheRecord
 
-    @Query("select * from giustifiche_record where dip_id = :dip ORDER BY data_inizio DESC, ora_inizio DESC, dataOra_richiesta DESC")
+    @Query("select * from giustifiche_record where dip_id = :dip AND richiesto = 'richiesto' ORDER BY data_inizio DESC, ora_inizio DESC, dataOra_richiesta DESC")
     fun getGiustFlow (dip:Long) : Flow<List<GiustificheRecord?>>
+
+    @Query("select * from giustifiche_record ORDER BY data_inizio DESC, ora_inizio DESC, dataOra_richiesta DESC")
+    fun getGiustFlowByAdmin () : Flow<List<GiustificheRecord?>>
+
+    @Query("select * from giustifiche_record where richiesto = :ric ORDER BY data_inizio DESC, ora_inizio DESC, dataOra_richiesta DESC")
+    fun getGiustFlowByManagerunico (ric:String = "richiesto") : Flow<List<GiustificheRecord?>>
+
+    @Query("select * from giustifiche_record where richiesto = 'richiesto' OR richiesto = 'ok_liv_1' ORDER BY data_inizio DESC, ora_inizio DESC, dataOra_richiesta DESC")
+    fun getGiustFlowByManagerLiv1 () : Flow<List<GiustificheRecord?>>
+
+    @Query("select * from giustifiche_record where richiesto = 'ok_liv_1' ORDER BY data_inizio DESC, ora_inizio DESC, dataOra_richiesta DESC")
+    fun getGiustFlowByManagerLiv2 () : Flow<List<GiustificheRecord?>>
 
     @Query("select * from giustifiche_record where giu_id = :id")
     fun getGiustificaRecordByServerId (id:Long) : GiustificheRecord

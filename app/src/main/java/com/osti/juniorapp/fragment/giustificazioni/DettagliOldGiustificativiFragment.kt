@@ -167,7 +167,6 @@ class DettagliOldGiustificativiFragment : DialogFragment() {
                     }
                 }
             }
-
         }
     }
 

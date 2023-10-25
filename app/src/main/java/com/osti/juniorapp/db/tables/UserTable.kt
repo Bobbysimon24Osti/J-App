@@ -24,8 +24,11 @@ class UserTable(
 
     var nascondi_timbrature:String = "0",
 
+    var livello_manager:String = "unico",
+
     @PrimaryKey(autoGenerate = true)
     var id: Int = 0
+
 
 
 ) {

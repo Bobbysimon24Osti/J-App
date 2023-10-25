@@ -59,6 +59,7 @@ class JuniorUser{
     var permCartellino:String = "0"
     var dipentende : JuniorDip? = null
     var nascondiTimbrature : String = "0"
+    var livelloManager : String = "unico"
 
 
     fun canTimbr():Boolean{
@@ -112,6 +113,7 @@ class JuniorUser{
                     this.permWorkFlow = tmpUser.permWorkFlow
                     this.permCartellino = tmpUser.permCartellino
                     this.nascondiTimbrature = tmpUser.nascondiTimbrature
+                    this.livelloManager = tmpUser.livelloManager
 
                     JuniorApplication.myDatabaseController.getDipendente(tmpUser.dipentende?.serverId){
                         if(it.newValue != null){
@@ -125,7 +127,7 @@ class JuniorUser{
         }
     }
 
-    constructor(server_id:String, key:String, name:String, type:String, perm_timbrature:String, perm_workFlow:String, perm_cartellino:String, nascondiTimbrature:String,  dip: JuniorDip?){
+    constructor(server_id:String, key:String, name:String, type:String, perm_timbrature:String, perm_workFlow:String, perm_cartellino:String, nascondiTimbrature:String, livelloMan:String,  dip: JuniorDip?){
 
         this.serverIdUser = server_id
         this.key = key
@@ -136,6 +138,7 @@ class JuniorUser{
         this.permCartellino = perm_cartellino
         this.nascondiTimbrature = nascondiTimbrature
         this.dipentende = dip
+        this.livelloManager = livelloMan
 
         JuniorApplication.myDatabaseController.getUser(server_id){
                 if(it.newValue == null){
@@ -151,7 +154,9 @@ class JuniorUser{
                         perm_cartellino,
                         dip?.badge ?: -1,
                         dip?.serverId ?: -1,
-                        nascondiTimbrature
+                        nascondiTimbrature,
+                        livelloMan
+
                     )
 
                     JuniorApplication.updateUserOnDb(
@@ -163,7 +168,7 @@ class JuniorUser{
     }
 
     fun creaOnDb (id:String){
-        val tmpUserTable = UserTable(id, name, type, permTimbrature, permWorkFlow, permCartellino, dipentende?.badge ?: -1, dipentende?.serverId ?:-1)
+        val tmpUserTable = UserTable(id, name, type, permTimbrature, permWorkFlow, permCartellino, dipentende?.badge ?: -1, dipentende?.serverId ?:-1, livelloManager)
         JuniorApplication.myDatabaseController.creaUser(tmpUserTable)
     }
 
@@ -187,6 +192,7 @@ class JuniorUser{
                                     tmpUser.perm_workflow,
                                     tmpUser.perm_cartellino,
                                     tmpUser.nascondi_timbrature,
+                                    tmpUser.livello_manager,
                                     JuniorDip(
                                         tmpUser.idDipendente,
                                         tmpDip.nome,
@@ -207,6 +213,7 @@ class JuniorUser{
                                     tmpUser.perm_workflow,
                                     tmpUser.perm_cartellino,
                                     tmpUser.nascondi_timbrature,
+                                    tmpUser.livello_manager,
                                     null
                                 )
                                 observer.propertyChange(PropertyChangeEvent("JUNIOR USER", "JUNIOR USER", user, user))
@@ -227,6 +234,7 @@ class JuniorUser{
                     permTimbrature == other.permTimbrature &&
                     permWorkFlow == other.permWorkFlow &&
                     nascondiTimbrature == other.nascondiTimbrature &&
+                    livelloManager == other.livelloManager &&
                     dipentende == other.dipentende){
                 return true
             }
@@ -244,6 +252,7 @@ class JuniorUser{
         result = 31 * result + permWorkFlow.hashCode()
         result = 31 * result + permCartellino.hashCode()
         result = 31 * result + nascondiTimbrature.hashCode()
+        result = 31 * result + livelloManager.hashCode()
         result = 31 * result + (dipentende?.hashCode() ?: 0)
         return result
     }

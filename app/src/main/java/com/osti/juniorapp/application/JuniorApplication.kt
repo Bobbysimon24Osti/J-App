@@ -198,6 +198,7 @@ class JuniorApplication : Application() {
             val permCartellino = utente.get("ute_cartellini")?.asString?: return
             val serverIdDipendente = utente.get("ute_dipautorizzato")?.asLong ?:return
             val nascondiTimbrature = utente.get("ute_nasconditimbrature")?.asString ?:return
+            val livelloManager = utente.get("ute_liv_manager")?.asString ?:return
 
             val jsDipendente = params.get("dipendente")?.asJsonObject?: return
             val newDip = createDip(jsDipendente, serverIdDipendente)
@@ -222,6 +223,7 @@ class JuniorApplication : Application() {
                 permWorkFlow,
                 permCartellino,
                 nascondiTimbrature,
+                livelloManager,
                 newDip
             )
 
@@ -238,7 +240,7 @@ class JuniorApplication : Application() {
 
         fun updateLocalGiust (datas:JsonArray){
             for(i in 0 until datas.size()){
-                myDatabaseController.updateTest(GiustificheConverter.getRecordFromJson(datas[i] as JsonObject))
+                myDatabaseController.creaGiustificheRecord(GiustificheConverter.getRecordFromJson(datas[i] as JsonObject))
             }
         }
 

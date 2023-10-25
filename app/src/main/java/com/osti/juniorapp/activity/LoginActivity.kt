@@ -79,7 +79,7 @@ class LoginActivity : AppCompatActivity() {
             val key = response.headers()["x-user-key"]!!
             val serverid = response.headers()["x-user-id"]!!
             JuniorApplication.myKeystore.setKey(key, this)
-            JuniorApplication.myJuniorUser.value = JuniorUser(serverid, key, "null", "null", "null", "null", "null", "null", null)
+            JuniorApplication.myJuniorUser.value = JuniorUser(serverid, key, "null", "null", "null", "null", "null", "null", "null", null)
 
             log.insertLog("Primo Login eseguito con successo")
 

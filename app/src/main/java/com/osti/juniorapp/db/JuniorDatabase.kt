@@ -110,18 +110,25 @@ abstract class JuniorDatabase : RoomDatabase() {
                     newDb.addMigrations(MIGRATION_2_3)
                     newDb.addMigrations(MIGRATION_3_4)
                     newDb.addMigrations(MIGRATION_4_5)
+                    newDb.addMigrations(MIGRATION_5_6)
                 }
                 2 ->{
                     newDb.addMigrations(MIGRATION_2_3)
                     newDb.addMigrations(MIGRATION_3_4)
                     newDb.addMigrations(MIGRATION_4_5)
+                    newDb.addMigrations(MIGRATION_5_6)
                 }
                 3 ->{
                     newDb.addMigrations(MIGRATION_3_4)
                     newDb.addMigrations(MIGRATION_4_5)
+                    newDb.addMigrations(MIGRATION_5_6)
                 }
                 4 ->{
                     newDb.addMigrations(MIGRATION_4_5)
+                    newDb.addMigrations(MIGRATION_5_6)
+                }
+                5 ->{
+                    newDb.addMigrations(MIGRATION_5_6)
                 }
             }
             return newDb.build()
@@ -183,6 +190,14 @@ abstract class JuniorDatabase : RoomDatabase() {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL(
                     "ALTER TABLE users ADD `nascondi_timbrature` TEXT NOT NULL DEFAULT '0'"
+                )
+            }
+        }
+
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "ALTER TABLE users ADD `livello_manager` TEXT NOT NULL DEFAULT 'unico'"
                 )
             }
         }

@@ -85,6 +85,7 @@ class RiceviDatiThread : Thread() {
         //set scaricate si usa anche se è offline perchè ovviamente non c'è niente da aspettare in questi casi ma si mostra il db offline
         if(p0.oldValue == true){
             setGiustScaricate(true)
+            JuniorApplication.myDatabaseController.clearGiust()
             JuniorApplication.updateLocalGiust(((p0.newValue as Response<*>).body() as JsonObject).getAsJsonArray("giustificazioni"))
         }
         else{

@@ -262,12 +262,13 @@ class MainActivity : AppCompatActivity(){
 
     private fun updateNavView(user: JuniorUser? = myJuniorUser.value) = runOnUiThread(){
         if(navigationMenu.isNotEmpty()){
+
             navigationMenu.removeAllViews()
         }
         if(user != null){
             setLastFragment(CartellinoFragment::class.simpleName, this)
             for(x in NavigationMenuOptions.options){
-                if (x == R.string.menu_gestisci_giustificazioni){//user.type != "admin" && user.type != "manager"){
+                if (x == R.string.menu_gestisci_giustificazioni && user.type != "admin" && user.type != "manager"){
                     continue
                 }
                 if(x == R.string.menu_old_stamp && user.nascondiTimbrature == "1"){

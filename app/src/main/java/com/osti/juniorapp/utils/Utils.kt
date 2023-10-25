@@ -5,7 +5,7 @@ import java.util.Locale
 
 object Utils {
 
-    const val DB_VERSION = 5
+    const val DB_VERSION = 6
     const val DB_NAME = "JuniorDB"
     const val MINACCURACY = 100000
     const val APPSTATESHARED = "OK"

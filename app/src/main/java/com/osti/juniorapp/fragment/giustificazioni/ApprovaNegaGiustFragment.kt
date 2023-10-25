@@ -34,15 +34,15 @@ class ApprovaNegaGiustFragment : Fragment() {
 
     private fun init(v:View){
         recyclerView = v.findViewById(R.id.recycler_richiesteManager)
-        val dip = JuniorApplication.myJuniorUser.value?.dipentende
-        if(dip!=null){
-            listenToGiust(dip)
+        val use = JuniorApplication.myJuniorUser.value
+        if(use!=null){
+            listenToGiust(use)
         }
     }
 
-    fun listenToGiust(dip:JuniorUser.JuniorDip){
+    fun listenToGiust(user: JuniorUser){
         MainScope().async {
-            JuniorApplication.myDatabaseController.getGiustFlow(dip.serverId).collect {
+            JuniorApplication.myDatabaseController.getGiustFlow(user).collect {
                 if (it is List<*>) {
                     adapt(it)
                 }
@@ -86,7 +86,7 @@ class ApprovaNegaGiustFragment : Fragment() {
         }
 
         override fun onBindViewHolder(holder: RecyclerViewHolder, position: Int) {
-            if(list!= null){
+            if(list!= null && list[position]?.richiesto == "richiesto"){
                 val nomeGiust = GiustificheConverter.getNameById(list[position]!!.giu_type_id)
 
                 holder.textViewNomeDip.text = list[position]!!.dip_nome
