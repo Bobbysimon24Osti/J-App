@@ -44,12 +44,13 @@ import com.osti.juniorapp.db.ParamManager
 import com.osti.juniorapp.fragment.AccountFragment
 import com.osti.juniorapp.fragment.CartellinoFragment
 import com.osti.juniorapp.fragment.giustificazioni.GiustificativiDettagliFragment
-import com.osti.juniorapp.fragment.giustificazioni.GiustificheSelectionFragment
+import com.osti.juniorapp.fragment.giustificazioni.OldGiustificheListFragment
 import com.osti.juniorapp.fragment.InfoFragment
 import com.osti.juniorapp.fragment.NotificheFragment
 import com.osti.juniorapp.fragment.timbrature.OldStampFragment
 import com.osti.juniorapp.fragment.timbrature.TimbrVirtualeFragment
 import com.osti.juniorapp.fragment.UserLoadWaitFragment
+import com.osti.juniorapp.fragment.giustificazioni.GiustificheFragmentSelection
 import com.osti.juniorapp.menu.MyConstraintLayout
 import com.osti.juniorapp.menu.MyMenuTextView
 import com.osti.juniorapp.preferences.JuniorShredPreferences
@@ -456,7 +457,7 @@ class MainActivity : AppCompatActivity(){
         setTitoloSchermata(resources.getString(R.string.menu_gestisci_giustificazioni))
         try{
             supportFragmentManager.beginTransaction().apply {
-                replace(R.id.fragmentContainerView, ApprovaNegaGiustFragment())
+                replace(R.id.fragmentContainerView, GiustificheFragmentSelection())
                 commit()
             }
         }
@@ -521,7 +522,7 @@ class MainActivity : AppCompatActivity(){
     fun showOldGiustificheFragment(){
         setTitoloSchermata(resources.getString(R.string.menu_lista_giust))
         supportFragmentManager.beginTransaction().apply {
-            replace(R.id.fragmentContainerView, GiustificheSelectionFragment())
+            replace(R.id.fragmentContainerView, OldGiustificheListFragment())
             commit()
         }
     }
@@ -577,7 +578,7 @@ class MainActivity : AppCompatActivity(){
                 InfoFragment::class.simpleName -> {
                     showInfoFragment()
                 }
-                GiustificheSelectionFragment::class.simpleName -> {
+                OldGiustificheListFragment::class.simpleName -> {
                     showOldGiustificheFragment()
                 }
                 else-> {

@@ -47,18 +47,18 @@ interface GiustificheRecordDao {
     @Query("select * from giustifiche_record where dip_id = :dip AND richiesto = 'richiesto' ORDER BY data_inizio DESC, ora_inizio DESC, dataOra_richiesta DESC")
     fun getGiustFlow (dip:Long) : Flow<List<GiustificheRecord?>>
 
-    @Query("select * from giustifiche_record ORDER BY data_inizio DESC, ora_inizio DESC, dataOra_richiesta DESC")
-    fun getGiustFlowByAdmin () : Flow<List<GiustificheRecord?>>
+    @Query("select * from giustifiche_record WHERE dip_id != :dipId AND (richiesto = \"richiesto\" OR richiesto = \"ok_livello1\") ORDER BY data_inizio DESC, ora_inizio DESC, dataOra_richiesta DESC")
+    fun getGiustFlowNoMieDaGestire (dipId:Long) : Flow<List<GiustificheRecord?>> //Tutte le giustificazioni da gestire apparte quelle richieste dall'utente lggato
 
-    @Query("select * from giustifiche_record where richiesto = :ric ORDER BY data_inizio DESC, ora_inizio DESC, dataOra_richiesta DESC")
-    fun getGiustFlowByManagerunico (ric:String = "richiesto") : Flow<List<GiustificheRecord?>>
-
-    @Query("select * from giustifiche_record where richiesto = 'richiesto' OR richiesto = 'ok_liv_1' ORDER BY data_inizio DESC, ora_inizio DESC, dataOra_richiesta DESC")
-    fun getGiustFlowByManagerLiv1 () : Flow<List<GiustificheRecord?>>
-
-    @Query("select * from giustifiche_record where richiesto = 'ok_liv_1' ORDER BY data_inizio DESC, ora_inizio DESC, dataOra_richiesta DESC")
-    fun getGiustFlowByManagerLiv2 () : Flow<List<GiustificheRecord?>>
+    @Query("select * from giustifiche_record WHERE dip_id != :dipId ORDER BY data_inizio DESC, ora_inizio DESC, dataOra_richiesta DESC")
+    fun getGiustFlowStorico (dipId:Long) : Flow<List<GiustificheRecord?>>
 
     @Query("select * from giustifiche_record where giu_id = :id")
     fun getGiustificaRecordByServerId (id:Long) : GiustificheRecord
+
+    @Query("UPDATE giustifiche_record SET richiesto = \"approvato\" where giu_id = :id")
+    fun setApprovato (id:Long)
+
+    @Query("UPDATE giustifiche_record SET richiesto = \"negato\" where giu_id = :id")
+    fun setNegato (id:Long)
 }

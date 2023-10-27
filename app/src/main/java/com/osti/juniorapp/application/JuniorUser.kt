@@ -156,7 +156,6 @@ class JuniorUser{
                         dip?.serverId ?: -1,
                         nascondiTimbrature,
                         livelloMan
-
                     )
 
                     JuniorApplication.updateUserOnDb(

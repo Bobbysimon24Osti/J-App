@@ -18,10 +18,9 @@ import com.osti.juniorapp.db.tables.GiustificheRecord
 import com.osti.juniorapp.utils.GiustificheConverter
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.async
-import kotlin.Int
 
+class StoricoRichiesteFragment : Fragment() {
 
-class ApprovaNegaGiustFragment : Fragment() {
 
     lateinit var recyclerView: RecyclerView
     lateinit var buttonApprova: Button
@@ -37,13 +36,13 @@ class ApprovaNegaGiustFragment : Fragment() {
         return view
     }
 
-    private fun init(v:View){
+    private fun init(v: View){
         recyclerView = v.findViewById(R.id.recycler_richiesteManager)
         buttonApprova = v.findViewById(R.id.button_approvaGiust)
         buttonNega = v.findViewById(R.id.button_negaGiust)
 
-        buttonApprova.setOnClickListener(this::approvaSelected)
-        buttonNega.setOnClickListener(this::negaSelected)
+        buttonApprova.visibility = View.GONE
+        buttonNega.visibility = View.GONE
 
         val use = JuniorApplication.myJuniorUser.value
 
@@ -52,27 +51,44 @@ class ApprovaNegaGiustFragment : Fragment() {
         }
     }
 
-    private fun approvaSelected(v:View){
+    private fun approvaSelected(v: View){
         for(item in (recyclerView.adapter as ApprovaNegaGiustAdapter).selectedItems){
             JuniorApplication.myDatabaseController.setGiustApprovato(item)
         }
     }
 
-    private fun negaSelected(v:View){
+    private fun negaSelected(v: View){
         for(item in (recyclerView.adapter as ApprovaNegaGiustAdapter).selectedItems){
             JuniorApplication.myDatabaseController.setGiustNegato(item)
         }
     }
-
     fun listenToGiust(user: JuniorUser){
         MainScope().async {
-            JuniorApplication.myDatabaseController.getGiustFlowNoMieDaGestire(user.dipentende!!.serverId).collect {
+            JuniorApplication.myDatabaseController.getGiustFlowStorico(user.dipentende!!.serverId).collect {
                 var list = ArrayList<GiustificheRecord>()
                 if (it is List<*>) {
-                    for(item in it){
-                       if(item?.richiesto == "richiesto") {
-                           list.add(item)
-                       }
+                    when (user.livelloManager){
+                        "livello1" -> {
+                            for(item in it){
+                                if(item != null && item.richiesto != "ok_livello1") {
+                                    list.add(item)
+                                }
+                            }
+                        }
+                        "livello2" -> {
+                            for(item in it){
+                                if(item != null && item.richiesto == "ok_livello1") {
+                                    list.add(item)
+                                }
+                            }
+                        }
+                        else -> {
+                            for(item in it){
+                                if(item != null && item.richiesto != "richiesto") {
+                                    list.add(item)
+                                }
+                            }
+                        }
                     }
                     adapt(list)
                 }

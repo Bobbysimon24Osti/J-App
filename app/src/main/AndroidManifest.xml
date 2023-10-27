@@ -18,6 +18,7 @@
         android:supportsRtl="true"
         android:theme="@style/JuniorApp"
         android:screenOrientation="sensorPortrait"
+        android:enableOnBackInvokedCallback="true"
         android:usesCleartextTraffic="true">
         <activity
             android:name=".activity.ErrorActivity"

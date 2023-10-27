@@ -3,8 +3,6 @@ package com.osti.juniorapp.db
 import android.content.Context
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
-import com.osti.juniorapp.application.JuniorApplication
-import com.osti.juniorapp.application.JuniorUser
 import com.osti.juniorapp.db.resolvers.JuniorNotificheResolver
 import com.osti.juniorapp.db.tables.AngelTable
 import com.osti.juniorapp.db.tables.DipendentiTable
@@ -381,7 +379,8 @@ class DatabaseController (context: Context) {
     val log = LogController(LogController.GIUST)
     fun creaGiustificheRecord(giust: GiustificheRecord){
         CoroutineScope(Dispatchers.IO).async{
-              myDB.mGiustificheRecordDao().insert(giust)
+              val i = myDB.mGiustificheRecordDao().insert(giust)
+             val j = i
         }
     }
 
@@ -435,36 +434,28 @@ class DatabaseController (context: Context) {
         }
     }
 
-    fun getGiustFlow (user:JuniorUser): Flow<List<GiustificheRecord?>>{
-        when(user.type){
-            "admin" -> {
-                return myDB.mGiustificheRecordDao().getGiustFlowByAdmin()
-            }
-            "manager" -> {
-                when (user.livelloManager){
-                    "livello1" -> {
-                        return myDB.mGiustificheRecordDao().getGiustFlowByManagerLiv1()
-                    }
-                    "livello2" -> {
-                        return myDB.mGiustificheRecordDao().getGiustFlowByManagerLiv2()
-                    }
-                    "unico" -> {
-                        return myDB.mGiustificheRecordDao().getGiustFlowByManagerunico()
-                    }
-                    else -> {
-                        return myDB.mGiustificheRecordDao().getGiustFlowByManagerunico()
-                    }
-                }
-            }
-            else -> {
-                return myDB.mGiustificheRecordDao().getGiustFlowByAdmin()
-            }
-        }
+    fun getGiustFlowNoMieDaGestire (dipId:Long): Flow<List<GiustificheRecord?>>{
+        return myDB.mGiustificheRecordDao().getGiustFlowNoMieDaGestire(dipId)
     }
+
     fun getGiustFlow (dip: Long): Flow<List<GiustificheRecord?>>{
         return myDB.mGiustificheRecordDao().getGiustFlow(dip)
     }
 
+    fun setGiustApprovato(id:Long){
+        CoroutineScope(Dispatchers.IO).async {
+            myDB.mGiustificheRecordDao().setApprovato(id)
+        }
+    }
+    fun setGiustNegato(id:Long){
+        CoroutineScope(Dispatchers.IO).async {
+            myDB.mGiustificheRecordDao().setNegato(id)
+        }
+    }
+
+    fun getGiustFlowStorico(dipId:Long) : Flow<List<GiustificheRecord?>>{
+        return myDB.mGiustificheRecordDao().getGiustFlowStorico(dipId)
+    }
 
     /*
     NOMI FILE

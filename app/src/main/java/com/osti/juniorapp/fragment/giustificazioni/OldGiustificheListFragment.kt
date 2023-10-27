@@ -27,7 +27,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import java.beans.PropertyChangeListener
 
-class GiustificheSelectionFragment : Fragment() {
+class OldGiustificheListFragment : Fragment() {
     lateinit var recyclerSelection: RecyclerView
     lateinit var textViewEmpty: TextView
     lateinit var imageViewRefresh: ImageView

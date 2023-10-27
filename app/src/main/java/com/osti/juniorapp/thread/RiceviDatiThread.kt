@@ -7,6 +7,11 @@ import com.osti.juniorapp.network.NetworkController
 import com.osti.juniorapp.db.ParamManager
 import com.osti.juniorapp.network.NetworkNotifiche
 import com.osti.juniorapp.utils.Utils.TENTATIVIMAXRICHIESTE
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import retrofit2.Response
 import java.beans.PropertyChangeEvent
 import java.beans.PropertyChangeListener
@@ -129,18 +134,25 @@ class RiceviDatiThread : Thread() {
     }
 
     fun downloadFromServer(serverId:String? = null, key:String? = null){
-        if(!isDownloading.getDownloading()){
-            isDownloading.setDownloadOn()
-            if(serverId == null || key == null){
-                val user = JuniorApplication.myJuniorUser
-                if(user != null){
-                    NetworkController.login(user.value!!.serverIdUser, user.value!!.key, obs = loginObs)
+        tstst().invokeOnCompletion {
+            if(!isDownloading.getDownloading()){
+                isDownloading.setDownloadOn()
+                if(serverId == null || key == null){
+                    val user = JuniorApplication.myJuniorUser
+                    if(user != null){
+                        NetworkController.login(user.value!!.serverIdUser, user.value!!.key, obs = loginObs)
+                    }
+                }
+                else{
+                    NetworkController.login(serverId, key, obs = loginObs)
                 }
             }
-            else{
-                NetworkController.login(serverId, key, obs = loginObs)
-            }
         }
+
+    }
+
+    fun tstst() = CoroutineScope((Dispatchers.Default)).launch{
+        delay(10000)
     }
 
 }

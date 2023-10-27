@@ -30,6 +30,11 @@ import com.osti.juniorapp.thread.RiceviDatiThread
 import com.osti.juniorapp.utils.GiustificheConverter
 import com.osti.juniorapp.utils.LogController
 import com.osti.juniorapp.utils.Utils
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -44,6 +49,9 @@ class JuniorApplication : Application() {
         init()
     }
 
+    fun tstst() = runBlocking{
+        delay(10000)
+    }
     private fun init(){
         myDatabaseController = DatabaseController(this)
         log = LogController(LogController.ATTIVAZIONE)
@@ -198,7 +206,15 @@ class JuniorApplication : Application() {
             val permCartellino = utente.get("ute_cartellini")?.asString?: return
             val serverIdDipendente = utente.get("ute_dipautorizzato")?.asLong ?:return
             val nascondiTimbrature = utente.get("ute_nasconditimbrature")?.asString ?:return
-            val livelloManager = utente.get("ute_liv_manager")?.asString ?:return
+
+            val livelloManager = let{
+                if(utente.has("ute_liv_manager") && !utente.get("ute_liv_manager").isJsonNull){
+                    utente.get("ute_liv_manager").asString
+                }
+                else{
+                    "null"
+                }
+            }
 
             val jsDipendente = params.get("dipendente")?.asJsonObject?: return
             val newDip = createDip(jsDipendente, serverIdDipendente)
