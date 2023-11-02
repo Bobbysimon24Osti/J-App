@@ -1,6 +1,5 @@
 package com.osti.juniorapp.fragment
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,9 +8,8 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.osti.juniorapp.R
-import com.osti.juniorapp.activity.LoginActivity
 import com.osti.juniorapp.application.JuniorApplication
-import com.osti.juniorapp.application.JuniorUser
+import com.osti.juniorapp.application.JuniorUserOld
 import com.osti.juniorapp.db.ParamManager
 import com.osti.juniorapp.db.tables.LogTable
 
@@ -75,7 +73,7 @@ class AccountFragment : Fragment() {
         }
     }
 
-    private fun refreshData(user:JuniorUser?){
+    private fun refreshData(user:JuniorUserOld?){
         activity?.runOnUiThread {
             if(user?.dipentende != null){
                 val param = ParamManager

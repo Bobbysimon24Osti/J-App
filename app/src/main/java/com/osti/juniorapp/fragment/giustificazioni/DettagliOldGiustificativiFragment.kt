@@ -9,6 +9,7 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.DialogFragment
 import com.google.gson.JsonElement
 import com.osti.juniorapp.R
@@ -31,6 +32,7 @@ class DettagliOldGiustificativiFragment : DialogFragment() {
 
     lateinit var giust: GiustificheRecord
 
+    lateinit var constraintFrag: ConstraintLayout
     lateinit var closeButton: ImageView
 
     lateinit var textViewStatus: TextView
@@ -96,6 +98,7 @@ class DettagliOldGiustificativiFragment : DialogFragment() {
                     if(it.newValue != null){
                         giust = it.newValue as GiustificheRecord
 
+                        constraintFrag = v.findViewById(R.id.constraint_dettagli_oldGiustifiche)
                         textViewStatus = v.findViewById(R.id.textView_approvatoNegato)
                         textViewRichistoIl = v.findViewById(R.id.textView_richiestoIl)
                         textViewGestitoIl = v.findViewById(R.id.textView_gestitoIl)
@@ -109,6 +112,8 @@ class DettagliOldGiustificativiFragment : DialogFragment() {
                         textViewStatus.text = giust.richiesto
 
                         progressbar = v.findViewById(R.id.progressBarGiust)
+
+                        constraintFrag.setOnClickListener(null)
 
                         textViewRichistoIl.text = Utils.FORMATDATEHOURS.parse(giust.dataOra_richiesta)
                             ?.let { Utils.NORMALFORMATDATEHOURS.format(it) }

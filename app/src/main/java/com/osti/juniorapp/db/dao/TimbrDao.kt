@@ -23,8 +23,8 @@ interface TimbrDao {
     @Query("select * from timbrature where dip_id = :dip ORDER BY id DESC LIMIT 1000")
      fun getAllTimbr (dip:Long) : List<TimbrTable>
 
-    @Query("select * from timbrature where onServer = 0 LIMIT(1)")
-    fun getLastOfflineTimbr () : Flow<TimbrTable?>
+    @Query("select * from timbrature where onServer = 0 AND dip_id = :dipIp LIMIT(1)")
+    fun getLastOfflineTimbr (dipIp:Long) : Flow<TimbrTable?>
 
     @Query("select * from timbrature where onServer = 1")
     fun getUploadedTimbr () : List<TimbrTable>

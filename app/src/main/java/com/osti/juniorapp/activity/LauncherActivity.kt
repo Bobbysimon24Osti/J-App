@@ -3,6 +3,7 @@ package com.osti.juniorapp.activity
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import com.osti.juniorapp.R
 import com.osti.juniorapp.application.JuniorApplication
 import kotlinx.coroutines.CoroutineScope
@@ -17,6 +18,7 @@ class LauncherActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_launcher)
         //tstst()
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         val i = intent.extras
         if(i!= null){
             nuoveNotifiche = true

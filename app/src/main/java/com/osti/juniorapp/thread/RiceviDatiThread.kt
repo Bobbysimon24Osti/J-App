@@ -9,6 +9,7 @@ import com.osti.juniorapp.network.NetworkNotifiche
 import com.osti.juniorapp.utils.Utils.TENTATIVIMAXRICHIESTE
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -90,7 +91,6 @@ class RiceviDatiThread : Thread() {
         //set scaricate si usa anche se è offline perchè ovviamente non c'è niente da aspettare in questi casi ma si mostra il db offline
         if(p0.oldValue == true){
             setGiustScaricate(true)
-            JuniorApplication.myDatabaseController.clearGiust()
             JuniorApplication.updateLocalGiust(((p0.newValue as Response<*>).body() as JsonObject).getAsJsonArray("giustificazioni"))
         }
         else{
@@ -124,6 +124,12 @@ class RiceviDatiThread : Thread() {
                 ParamManager.setVersioneJW(params.get("versione_jweb").asString)
             }
 
+            //Invio timbrature e giustificazioni
+            if(JuniorApplication.invioDatiThread == null){
+                JuniorApplication.invioDatiThread = InvioDatiThread(JuniorApplication.myJuniorUser.value?.dipentende?.serverId ?: -1)
+                JuniorApplication.inviaDati()
+            }
+
             //Scarico Giustificazioni
             NetworkController.getGiustifiche(giustificheObs)
 
@@ -133,26 +139,21 @@ class RiceviDatiThread : Thread() {
         }
     }
 
-    fun downloadFromServer(serverId:String? = null, key:String? = null){
-        tstst().invokeOnCompletion {
-            if(!isDownloading.getDownloading()){
-                isDownloading.setDownloadOn()
-                if(serverId == null || key == null){
-                    val user = JuniorApplication.myJuniorUser
-                    if(user != null){
-                        NetworkController.login(user.value!!.serverIdUser, user.value!!.key, obs = loginObs)
-                    }
-                }
-                else{
-                    NetworkController.login(serverId, key, obs = loginObs)
-                }
+    fun downloadFromServer(serverId:String? = null, key:String? = null){if(!isDownloading.getDownloading()){
+        isDownloading.setDownloadOn()
+        if(serverId == null || key == null){
+            val user = JuniorApplication.myJuniorUser
+            if(user != null){
+                NetworkController.login(user.value!!.serverIdUser, user.value!!.key, obs = loginObs)
             }
         }
-
+        else{
+            NetworkController.login(serverId, key, obs = loginObs)
+        }
+    }
     }
 
-    fun tstst() = CoroutineScope((Dispatchers.Default)).launch{
-        delay(10000)
+    fun tetete() = CoroutineScope(Dispatchers.Default).launch{
+        delay(5000)
     }
-
 }

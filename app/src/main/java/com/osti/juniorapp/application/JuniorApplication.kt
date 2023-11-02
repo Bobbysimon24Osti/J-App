@@ -30,7 +30,6 @@ import com.osti.juniorapp.thread.RiceviDatiThread
 import com.osti.juniorapp.utils.GiustificheConverter
 import com.osti.juniorapp.utils.LogController
 import com.osti.juniorapp.utils.Utils
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
@@ -60,10 +59,6 @@ class JuniorApplication : Application() {
 
             myKeystore = MyKeystore(this, it.newValue as String?)
 
-            invioDatiThread = InvioDatiThread()
-
-            riceviDatiThread = RiceviDatiThread()
-
             JuniorShredPreferences.setDBversion(Utils.DB_VERSION, this)
 
             //START LOCATION LISTENER
@@ -86,12 +81,13 @@ class JuniorApplication : Application() {
                         val res = checkResult(p0)
                         when (res) {
                             ActivationController.ATTIVA -> {
+                                riceviDatiThread = RiceviDatiThread()
                                 log.insertLog("Attivazione completata con successo")
                                 startActivity(userId, false)
                             }
                             ActivationController.OFFLINE -> {
                                 log.insertLog("Applicazione offline, impossibile raggiungere il server OSTI (codice err. 105)")
-                                //APP NON RIESCE A VERIFICARE CODICE PER < 24 H
+                                //APP NON RIESCE A VERIFICARE CODICE
                                 startActivity(userId, true)
                             }
                             ActivationController.NOATTIVA -> {
@@ -137,10 +133,10 @@ class JuniorApplication : Application() {
         lateinit var myKeystore: MyKeystore
         lateinit var mLocationManager:LocationManager
 
-        lateinit var invioDatiThread:InvioDatiThread
-        lateinit var riceviDatiThread:RiceviDatiThread
+        var invioDatiThread:InvioDatiThread? = null
+        var riceviDatiThread:RiceviDatiThread? = null
 
-        var myJuniorUser: MutableLiveData<JuniorUser?> = MutableLiveData(null)
+        var myJuniorUser: MutableLiveData<JuniorUserOld?> = MutableLiveData(null)
         var isUserChecked = false
 
         fun setAppActivated() {
@@ -170,23 +166,24 @@ class JuniorApplication : Application() {
         fun inviaDati() {
             if (ActivationController.isActivated()
                 && myJuniorUser.value != null){
-                invioDatiThread.isGiustStarted = false
-                invioDatiThread.isTimbrStarted = false
-                invioDatiThread.checkForSending()
+                invioDatiThread?.isGiustStarted = false
+                invioDatiThread?.isTimbrStarted = false
+                invioDatiThread?.checkForSending()
             }
         }
 
         fun riceviDati(serverId:String? = null, key:String? = null){
             if(serverId != null || key != null){
-                riceviDatiThread.downloadFromServer(serverId, key)
+                riceviDatiThread?.downloadFromServer(serverId, key)
             }
             else if (ActivationController.isActivated()
                 && myJuniorUser.value != null){
-                riceviDatiThread.downloadFromServer()
+                riceviDatiThread?.downloadFromServer()
             }
         }
 
-        fun setLastUser(user: JuniorUser?){
+        fun setLastUser(user: JuniorUserOld?){
+            unSubscribeToFirebaseNotification()
             if(user== null){
                 isUserChecked = false
             }
@@ -230,7 +227,7 @@ class JuniorApplication : Application() {
 
             //Verifica se i dati sono uguali o vanno ad aggiornare effettivamente qualcosa
             val oldUser = myJuniorUser.value
-            val newUser = JuniorUser(
+            val newUser = JuniorUserOld(
                 serverId,
                 key,
                 name,
@@ -250,8 +247,28 @@ class JuniorApplication : Application() {
             //activity.finish()
             val strPIvaDb = jsConfig.get("lic_piva").asString + "_" + ParamManager.getArchivio()
             val strUserId = "ute_id_" + newUser.serverIdUser
-            Firebase.messaging.subscribeToTopic(strPIvaDb)
-            Firebase.messaging.subscribeToTopic(strUserId)
+
+            //Iscrivo alle notifiche dell'utente l'app
+            subscribeToFirebaseNotification()
+        }
+
+        fun subscribeToFirebaseNotification(){
+            Firebase.messaging.subscribeToTopic(getStrPIva())
+            Firebase.messaging.subscribeToTopic(getStrUserId())
+        }
+
+        fun unSubscribeToFirebaseNotification(){
+            Firebase.messaging.unsubscribeFromTopic(getStrPIva())
+            Firebase.messaging.unsubscribeFromTopic(getStrUserId())
+        }
+
+        private fun getStrPIva() : String{
+            val pIva = myDatabaseController.getConfig("lic_piva")
+            return pIva.valore + "_" + ParamManager.getArchivio()
+        }
+
+        private fun getStrUserId() : String{
+            return "ute_id_" + (myJuniorUser.value?.serverIdUser ?: -1)
         }
 
         fun updateLocalGiust (datas:JsonArray){
@@ -299,7 +316,7 @@ class JuniorApplication : Application() {
             myDatabaseController.creaMultipleConfig(newConfigs)
         }
 
-        private fun createDip(dip:JsonObject, id:Long) : JuniorUser.JuniorDip {
+        private fun createDip(dip:JsonObject, id:Long) : JuniorUserOld.JuniorDip {
 
             val dipName:String = try{
                 dip.get("dip_nome")?.asString?: "null"
@@ -324,7 +341,7 @@ class JuniorApplication : Application() {
                 "null"
             }
 
-            return JuniorUser.JuniorDip(id, dipName, badge, assunto, licenziato)
+            return JuniorUserOld.JuniorDip(id, dipName, badge, assunto, licenziato)
         }
 
         /**
@@ -342,7 +359,7 @@ class JuniorApplication : Application() {
             }
             else{
                 //Se c'è un id allora un utente è già registrato, e possiamo entrare con la chiave
-                myJuniorUser.value = JuniorUser(userId)
+                myJuniorUser.value = JuniorUserOld(userId)
                 //login()
                 return "MAIN"
             }

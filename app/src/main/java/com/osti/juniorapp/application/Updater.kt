@@ -20,12 +20,12 @@ object Updater {
                 }
                 else if (ActivationController.checkResult(it) == ActivationController.NOATTIVA){
                     activity.startActivity(Intent(activity, ActivationActivity::class.java))
-                   ParamManager.setLastUserId(null)
+                    JuniorApplication.setLastUser(null)
                     activity.finish()
                 }
                 else if (ActivationController.checkResult(it) == ActivationController.LOGOUT){
                     activity.startActivity(Intent(activity, LoginActivity::class.java))
-                    ParamManager.setLastUserId(null)
+                    JuniorApplication.setLastUser(null)
                     activity.finish()
                 }
             }

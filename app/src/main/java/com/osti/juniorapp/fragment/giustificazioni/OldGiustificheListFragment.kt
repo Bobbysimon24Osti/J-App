@@ -116,10 +116,12 @@ class OldGiustificheListFragment : Fragment() {
         }
     }
 
+    var oldList: List<GiustificheRecord?>? = null
     private fun listenToChanges(){
         MainScope().async {
             giustFlow.collect{
-                if(it is List<*>){
+                if(it is List<*> && it != oldList){
+                    oldList = it
                     adapt(it)
                 }
             }

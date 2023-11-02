@@ -1,13 +1,11 @@
 package com.osti.juniorapp.application
 
-import android.os.Parcel
-import android.os.Parcelable
 import com.osti.juniorapp.db.tables.DipendentiTable
 import com.osti.juniorapp.db.tables.UserTable
 import java.beans.PropertyChangeEvent
 import java.beans.PropertyChangeListener
 
-class JuniorUser{
+class JuniorUserOld{
 
 
     class JuniorDip {
@@ -103,7 +101,7 @@ class JuniorUser{
     constructor(id: String) {
         getUserFromDb(id) {
             if (it.newValue != null) {
-                val tmpUser = it.newValue as JuniorUser
+                val tmpUser = it.newValue as JuniorUserOld
                 if (JuniorApplication.myKeystore.activeKey != null) {
                     this.serverIdUser = tmpUser.serverIdUser
                     this.key = JuniorApplication.myKeystore.activeKey!!
@@ -182,7 +180,7 @@ class JuniorUser{
                     JuniorApplication.myDatabaseController.getDipendente(tmpUser.idDipendente){
                             if (it.newValue != null) {
                                 val tmpDip = it.newValue as DipendentiTable
-                                val user =  JuniorUser(
+                                val user =  JuniorUserOld(
                                     tmpUser.server_id,
                                     JuniorApplication.myKeystore.activeKey!!,
                                     tmpUser.name,
@@ -203,7 +201,7 @@ class JuniorUser{
                                 observer.propertyChange(PropertyChangeEvent("JUNIOR USER", "JUNIOR USER", user, user))
                             }
                             else {
-                                val user =  JuniorUser(
+                                val user =  JuniorUserOld(
                                     tmpUser.server_id,
                                     JuniorApplication.myKeystore.activeKey!!,
                                     tmpUser.name,
@@ -225,7 +223,7 @@ class JuniorUser{
     }
 
     override fun equals(other: Any?): Boolean {
-        if(other is JuniorUser){
+        if(other is JuniorUserOld){
             if (serverIdUser == other.serverIdUser &&
                     key == other.key &&
                     name == other.name &&

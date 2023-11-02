@@ -1,17 +1,14 @@
 package com.osti.juniorapp.fragment
 
 import android.os.Bundle
-import android.util.TypedValue
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.CalendarView
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.util.TypedValueCompat.ComplexDimensionUnit
 import androidx.fragment.app.FragmentContainerView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -19,14 +16,11 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.osti.juniorapp.R
 import com.osti.juniorapp.activity.MainActivity
 import com.osti.juniorapp.application.JuniorApplication
-import com.osti.juniorapp.application.JuniorUser
 import com.osti.juniorapp.db.tables.GiustificheRecord
 import com.osti.juniorapp.db.tables.NotificheTable
-import com.osti.juniorapp.fragment.giustificazioni.ApprovaNegaGiustFragment
 import com.osti.juniorapp.fragment.giustificazioni.DettagliOldGiustificativiFragment
 import com.osti.juniorapp.network.NetworkController
 import com.osti.juniorapp.network.NetworkNotifiche
-import com.osti.juniorapp.utils.GiustificheConverter
 import com.osti.juniorapp.utils.Utils.FORMATDATEHOURS
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.MainScope

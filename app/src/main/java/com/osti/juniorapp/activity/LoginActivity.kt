@@ -14,7 +14,7 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.gson.JsonElement
 import com.osti.juniorapp.R
 import com.osti.juniorapp.application.JuniorApplication
-import com.osti.juniorapp.application.JuniorUser
+import com.osti.juniorapp.application.JuniorUserOld
 import com.osti.juniorapp.network.NetworkController
 import com.osti.juniorapp.db.ParamManager
 import com.osti.juniorapp.thread.RiceviDatiThread
@@ -79,7 +79,7 @@ class LoginActivity : AppCompatActivity() {
             val key = response.headers()["x-user-key"]!!
             val serverid = response.headers()["x-user-id"]!!
             JuniorApplication.myKeystore.setKey(key, this)
-            JuniorApplication.myJuniorUser.value = JuniorUser(serverid, key, "null", "null", "null", "null", "null", "null", "null", null)
+            JuniorApplication.myJuniorUser.value = JuniorUserOld(serverid, key, "null", "null", "null", "null", "null", "null", "null", null)
 
             log.insertLog("Primo Login eseguito con successo")
 
@@ -91,7 +91,7 @@ class LoginActivity : AppCompatActivity() {
             //LOGIN VERIFICATO CON SUCCESSO
 
             //MEtto a false per evitare problemi con un possibile task precedente
-            JuniorApplication.riceviDatiThread.isDownloading = RiceviDatiThread.IsDownloading()
+            JuniorApplication.riceviDatiThread?.isDownloading = RiceviDatiThread.IsDownloading()
             startActivity(Intent(applicationContext, MainActivity::class.java).putExtra("LOGIN", "LOGINACTIVITY"))
             finish()
         }

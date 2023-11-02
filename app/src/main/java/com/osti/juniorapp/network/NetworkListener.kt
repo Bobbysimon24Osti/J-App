@@ -66,7 +66,7 @@ class NetworkListener(val activity: MainActivity) : ConnectivityManager.NetworkC
     override fun onAvailable(network: Network) {
         CoroutineScope(EmptyCoroutineContext).async {
             if(!firstTime){
-                delay(5000)
+                delay(1000)
                 StatusController.checkOstiServer(activity)
                 delay(1000)
                 StatusController.checkServerCliente{

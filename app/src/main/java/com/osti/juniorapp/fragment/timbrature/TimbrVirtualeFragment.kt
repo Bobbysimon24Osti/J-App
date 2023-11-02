@@ -35,7 +35,7 @@ import com.osti.juniorapp.BuildConfig
 import com.osti.juniorapp.R
 import com.osti.juniorapp.application.ActivationController
 import com.osti.juniorapp.application.JuniorApplication
-import com.osti.juniorapp.application.JuniorUser
+import com.osti.juniorapp.application.JuniorUserOld
 import com.osti.juniorapp.db.tables.DipendentiTable
 import com.osti.juniorapp.db.tables.GiustificheTable
 import com.osti.juniorapp.db.tables.TimbrTable
@@ -78,7 +78,7 @@ class TimbrVirtualeFragment () : Fragment() {
         if(arguments != null){
             JuniorApplication.myDatabaseController.getDipendente(requireArguments().getLong("serverId", -1)){
                 if(it.newValue != null){
-                    dipendente = JuniorUser.JuniorDip(it.newValue as DipendentiTable)
+                    dipendente = JuniorUserOld.JuniorDip(it.newValue as DipendentiTable)
 
                     initStampObserver()
                 }
@@ -86,7 +86,7 @@ class TimbrVirtualeFragment () : Fragment() {
         }
     }
 
-    lateinit var dipendente: JuniorUser.JuniorDip
+    lateinit var dipendente: JuniorUserOld.JuniorDip
 
     var causale: GiustificheTable? = null
 
@@ -181,7 +181,7 @@ class TimbrVirtualeFragment () : Fragment() {
 
     val configFlow = JuniorApplication.myDatabaseController.getSpinnerConfigFlow()
 
-    private fun observeLastStamp(dipendente: JuniorUser.JuniorDip?){
+    private fun observeLastStamp(dipendente: JuniorUserOld.JuniorDip?){
         CoroutineScope(Dispatchers.IO).async {
             observer.collect{
                 refreshDatas(dipendente)
@@ -287,7 +287,7 @@ class TimbrVirtualeFragment () : Fragment() {
         }
     }
 
-    private fun refreshDatas(dipendente: JuniorUser.JuniorDip?) {
+    private fun refreshDatas(dipendente: JuniorUserOld.JuniorDip?) {
         if (dipendente != null) {
             JuniorApplication.myDatabaseController.getlastStampDipendente(dipendente.serverId){
                 activity?.runOnUiThread {

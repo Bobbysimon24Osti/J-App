@@ -10,10 +10,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
-class InvioDatiThread() : Thread() {
+class InvioDatiThread(dipId:Long) : Thread() {
 
-    val timbrFlow = JuniorApplication.myDatabaseController.getTimbrFlow()
-    val giustFlow = JuniorApplication.myDatabaseController.getOfflineGiustFlow()
+    val timbrFlow = JuniorApplication.myDatabaseController.getTimbrFlow(dipId)
+    val giustFlow = JuniorApplication.myDatabaseController.getSingleGiustFlow(dipId)
     var isTimbrStarted = false
     var isGiustStarted = false
 

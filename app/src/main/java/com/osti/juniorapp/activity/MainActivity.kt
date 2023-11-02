@@ -26,7 +26,6 @@ import androidx.core.view.GravityCompat
 import androidx.core.view.isNotEmpty
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.gson.JsonElement
-import com.osti.juniorapp.fragment.giustificazioni.ApprovaNegaGiustFragment
 import com.osti.juniorapp.BuildConfig
 import com.osti.juniorapp.fragment.file.FileFragment
 import com.osti.juniorapp.R
@@ -34,7 +33,7 @@ import com.osti.juniorapp.application.ActivationController
 import com.osti.juniorapp.application.JuniorApplication.Companion.myDatabaseController
 import com.osti.juniorapp.application.JuniorApplication.Companion.myJuniorUser
 import com.osti.juniorapp.application.JuniorApplication.Companion.setLastFragment
-import com.osti.juniorapp.application.JuniorUser
+import com.osti.juniorapp.application.JuniorUserOld
 import com.osti.juniorapp.application.StatusController
 import com.osti.juniorapp.application.Updater
 import com.osti.juniorapp.network.NetworkAggiornaApp
@@ -216,7 +215,7 @@ class MainActivity : AppCompatActivity(){
     private fun loadUserFromDb(){
         val id = ParamManager.getLastUserId()
         if(id != null && myJuniorUser.value == null){
-            myJuniorUser.value = JuniorUser(id)
+            myJuniorUser.value = JuniorUserOld(id)
         }
         if(intent.hasExtra("OFFLINE") && intent.getBooleanExtra("OFFLINE", false)){
             showAlertAppOffline()
@@ -261,7 +260,7 @@ class MainActivity : AppCompatActivity(){
         }
     }
 
-    private fun updateNavView(user: JuniorUser? = myJuniorUser.value) = runOnUiThread(){
+    private fun updateNavView(user: JuniorUserOld? = myJuniorUser.value) = runOnUiThread(){
         if(navigationMenu.isNotEmpty()){
 
             navigationMenu.removeAllViews()

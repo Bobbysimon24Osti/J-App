@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.osti.juniorapp.R
 import com.osti.juniorapp.application.JuniorApplication
-import com.osti.juniorapp.application.JuniorUser
+import com.osti.juniorapp.application.JuniorUserOld
 import com.osti.juniorapp.db.tables.GiustificheRecord
 import com.osti.juniorapp.utils.GiustificheConverter
 import kotlinx.coroutines.MainScope
@@ -51,18 +51,7 @@ class StoricoRichiesteFragment : Fragment() {
         }
     }
 
-    private fun approvaSelected(v: View){
-        for(item in (recyclerView.adapter as ApprovaNegaGiustAdapter).selectedItems){
-            JuniorApplication.myDatabaseController.setGiustApprovato(item)
-        }
-    }
-
-    private fun negaSelected(v: View){
-        for(item in (recyclerView.adapter as ApprovaNegaGiustAdapter).selectedItems){
-            JuniorApplication.myDatabaseController.setGiustNegato(item)
-        }
-    }
-    fun listenToGiust(user: JuniorUser){
+    fun listenToGiust(user: JuniorUserOld){
         MainScope().async {
             JuniorApplication.myDatabaseController.getGiustFlowStorico(user.dipentende!!.serverId).collect {
                 var list = ArrayList<GiustificheRecord>()
@@ -139,7 +128,7 @@ class StoricoRichiesteFragment : Fragment() {
                 val nomeGiust = GiustificheConverter.getNameById(list[position]!!.giu_type_id)
 
                 holder.contraint.setOnLongClickListener {
-                    it.setBackgroundColor(Color.RED)
+                    it.setBackgroundColor(Color.CYAN)
                     selectedItems.add(list[position]?.giu_id ?:-1)
                     return@setOnLongClickListener true
                 }

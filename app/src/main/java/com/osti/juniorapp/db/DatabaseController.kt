@@ -193,15 +193,9 @@ class DatabaseController (context: Context) {
             myDB.mTimbrDao().updateTimbronServer(id)
         }
     }
-    fun getFirstOfflineTimbr(observer:PropertyChangeListener) {
-        CoroutineScope(Dispatchers.IO).async {
-            val tmp = myDB.mTimbrDao().getLastOfflineTimbr()
-            observer.propertyChange(PropertyChangeEvent("DATABASE CONTROLLER", "Get first offline timbr", null, tmp))
-        }
-    }
 
-    fun getTimbrFlow (): Flow<TimbrTable?>{
-        return myDB.mTimbrDao().getLastOfflineTimbr()
+    fun getTimbrFlow (dipId: Long): Flow<TimbrTable?>{
+        return myDB.mTimbrDao().getLastOfflineTimbr(dipId)
     }
 
     fun getAllTimbr(dip:Long, observer: PropertyChangeListener) {
@@ -380,7 +374,6 @@ class DatabaseController (context: Context) {
     fun creaGiustificheRecord(giust: GiustificheRecord){
         CoroutineScope(Dispatchers.IO).async{
               val i = myDB.mGiustificheRecordDao().insert(giust)
-             val j = i
         }
     }
 
@@ -409,8 +402,8 @@ class DatabaseController (context: Context) {
         }
     }
 
-    fun getOfflineGiustFlow(): Flow<GiustificheRecord?> {
-        return myDB.mGiustificheRecordDao().getOfflineGiustFlow()
+    fun getSingleGiustFlow(dipId:Long): Flow<GiustificheRecord?> {
+        return myDB.mGiustificheRecordDao().getSingleGiustFlow(dipId)
     }
 
     fun getAllGiustByDip(dip: Long, observer: PropertyChangeListener){

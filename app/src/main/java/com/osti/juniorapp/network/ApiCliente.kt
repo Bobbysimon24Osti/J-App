@@ -33,6 +33,19 @@ interface ApiCliente {
         @Header("X-Dispositivo") disp:String): Call<JsonElement>
 
     @Headers("Content-Type: application/json")
+    @GET("parametri.php")
+    fun loginFirstTime(
+        @Header("X-Db") db:String,
+        @Header("X-User-Id") id:String,
+        @Header("X-User-Key") key:String,
+        @Header("X-Guid") guid:String,
+        @Header("X-Code") code:String,
+        @Header("X-Versione-App") versione:String,
+        @Header("X-Dispositivo") disp:String,
+        @Query("da_record" ) da:String = "0",
+        @Query("n_record" ) n:String = "10"): Call<JsonElement>
+
+    @Headers("Content-Type: application/json")
     @POST("timbrature.php")
     fun sendTImbrature(
         @Header("X-Db") db:String,
@@ -167,4 +180,16 @@ interface ApiCliente {
         @Header("X-Versione-App") versione:String,
         @Header("X-Dispositivo") disp:String,
         @Body body:NetworkNotifiche.NotificaLetta): Call<JsonElement>
+
+    @Headers("Content-Type: application/json")
+    @PUT("giustificazioni.php")
+    fun setRichiesta(
+        @Header("X-Db") db:String,
+        @Header("X-User-Id") id:String,
+        @Header("X-User-Key") key:String,
+        @Header("X-Guid") guid:String,
+        @Header("X-Code") code:String,
+        @Header("X-Versione-App") versione:String,
+        @Header("X-Dispositivo") disp:String,
+        @Body body:NetworkRichieste.RichiesteUpdate): Call<JsonElement>
 }

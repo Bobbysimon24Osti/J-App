@@ -29,7 +29,7 @@ class GiustificheFragmentSelection : Fragment() {
 
         buttonNuove.setOnClickListener{
             activity?.supportFragmentManager?.beginTransaction()?.apply{
-                replace(R.id.fragmentContainerView, ApprovaNegaGiustFragment())
+                replace(R.id.fragmentContainerView, GestisciRichiesteFragment())
                 commit()
             }
         }
