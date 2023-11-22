@@ -16,6 +16,8 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.window.OnBackInvokedDispatcher
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -30,10 +32,10 @@ import com.osti.juniorapp.BuildConfig
 import com.osti.juniorapp.fragment.file.FileFragment
 import com.osti.juniorapp.R
 import com.osti.juniorapp.application.ActivationController
+import com.osti.juniorapp.application.JuniorApplication
 import com.osti.juniorapp.application.JuniorApplication.Companion.myDatabaseController
-import com.osti.juniorapp.application.JuniorApplication.Companion.myJuniorUser
 import com.osti.juniorapp.application.JuniorApplication.Companion.setLastFragment
-import com.osti.juniorapp.application.JuniorUserOld
+import com.osti.juniorapp.application.JuniorUser
 import com.osti.juniorapp.application.StatusController
 import com.osti.juniorapp.application.Updater
 import com.osti.juniorapp.network.NetworkAggiornaApp
@@ -90,6 +92,8 @@ class MainActivity : AppCompatActivity(){
         setContentView(R.layout.activity_main)
 
         setSupportActionBar(findViewById(R.id.main_toolbar))
+
+        onBackPressedDispatcher.addCallback(this,onBackPressedCallback)
 
         /**
          * Carico in memoria lo user nel db
@@ -213,22 +217,22 @@ class MainActivity : AppCompatActivity(){
 
 
     private fun loadUserFromDb(){
-        val id = ParamManager.getLastUserId()
-        if(id != null && myJuniorUser.value == null){
-            myJuniorUser.value = JuniorUserOld(id)
-        }
+        JuniorUser.getUserFromDb(ParamManager.getLastUserId() ?:"-1")
         if(intent.hasExtra("OFFLINE") && intent.getBooleanExtra("OFFLINE", false)){
             showAlertAppOffline()
         }
     }
 
     private fun listenToUserChanges(){
-        myJuniorUser.observe(this){
+        JuniorUser.updated.observe(this){
             if(it == null){
                 startLoginActivity()
             }
             else{
-                updateNavView(it)
+                updateNavView()
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.N_MR1){
+                    setLastFragment(TimbrVirtualeFragment::class.simpleName, this)
+                }
                 startRIghtFragment()
             }
         }
@@ -260,27 +264,38 @@ class MainActivity : AppCompatActivity(){
         }
     }
 
-    private fun updateNavView(user: JuniorUserOld? = myJuniorUser.value) = runOnUiThread(){
+    private fun updateNavView() = runOnUiThread(){
         if(navigationMenu.isNotEmpty()){
 
             navigationMenu.removeAllViews()
         }
-        if(user != null){
+        if(JuniorUser.userLogged){
             setLastFragment(CartellinoFragment::class.simpleName, this)
             for(x in NavigationMenuOptions.options){
-                if (x == R.string.menu_gestisci_giustificazioni && user.type != "admin" && user.type != "manager"){
+                if (x == R.string.menu_gestisci_giustificazioni && JuniorUser.type != "admin" && JuniorUser.type != "superAdmin" && JuniorUser.type != "manager"){
                     continue
                 }
-                if(x == R.string.menu_old_stamp && user.nascondiTimbrature == "1"){
+                if(x == R.string.menu_old_stamp && JuniorUser.nascondiTimbrature == "1"){
                     continue
                 }
+                if(x == R.string.menu_file && JuniorUser.permWorkFlow == "0"){
+                    continue
+                }
+                if(x == R.string.menu_gestisci_giustificazioni && JuniorUser.permWorkFlow == "0"){
+                    continue
+                }
+
                 var tmpTextView: MyMenuTextView? = MyMenuTextView(this, resources.getString(x))
-                if(resources.getString(x) == resources.getString(R.string.menu_richiesta_giust) || resources.getString(x) == resources.getString(R.string.menu_lista_giust)){
+                if(resources.getString(x) == resources.getString(R.string.menu_richiesta_giust) ||
+                    resources.getString(x) == resources.getString(R.string.menu_lista_giust) ||
+                    resources.getString(x) == resources.getString(R.string.menu_cartellino) ||
+                    resources.getString(x) == resources.getString(R.string.menu_gestisci_giustificazioni) ||
+                    resources.getString(x) == resources.getString(R.string.menu_file)){
                     if(ActivationController.permWorkFlow == "1"){
-                        if(user.permWorkFlow != "1"){
+                        if(JuniorUser.permWorkFlow != "1"){
                             tmpTextView?.setTextColor(Color.LTGRAY)
                         }
-                        else if (ActivationController.perTimbraVirtuale == "0" || !user.canTimbr()){
+                        else if (ActivationController.perTimbraVirtuale == "0" || !JuniorUser.canTimbr()){
                             setLastFragment(GiustificativiDettagliFragment::class.simpleName, this)
                         }
                     }
@@ -290,7 +305,7 @@ class MainActivity : AppCompatActivity(){
                 }
                 else if(resources.getString(x) == resources.getString(R.string.menu_timbra) || resources.getString(x) == resources.getString(R.string.menu_old_stamp)){
                     if(ActivationController.perTimbraVirtuale == "1"){
-                        if(!user.canTimbr()){
+                        if(!JuniorUser.canTimbr()){
                             tmpTextView?.setTextColor(Color.LTGRAY)
                         }
                         else{
@@ -391,7 +406,7 @@ class MainActivity : AppCompatActivity(){
     private var actualTimbrFragment: TimbrVirtualeFragment? = null
     private fun showTimbrFragment(){
         setTitoloSchermata(resources.getString(R.string.menu_timbra))
-        if( myJuniorUser.value?.dipentende?.nome =="null"){
+        if( JuniorUser.name =="null"){
             //ARRIVATO DIPENDENTE NULLO DA SERVER, QUANDO NON C'è UN DIPENDENTE ASSOCIATO ALL'UTENTE
             AlertDialog.Builder(this)
                 .setTitle("Non autorizzato")
@@ -405,7 +420,7 @@ class MainActivity : AppCompatActivity(){
                     if (actualTimbrFragment != null) {
                         detach(actualTimbrFragment!!)
                     }
-                    actualTimbrFragment = TimbrVirtualeFragment.newInstance(myJuniorUser.value!!.dipentende!!.serverId)
+                    actualTimbrFragment = TimbrVirtualeFragment.newInstance(JuniorUser.JuniorDipendente.serverId)
                     replace(R.id.fragmentContainerView, actualTimbrFragment!!)
                     commit()
                 }
@@ -490,8 +505,16 @@ class MainActivity : AppCompatActivity(){
         }
     }
 
+    private fun showGiustificheDisambiguationFragment(){
+        setTitoloSchermata(resources.getString(R.string.menu_gestisci_giustificazioni))
+        supportFragmentManager.beginTransaction().apply {
+            replace(R.id.fragmentContainerView, GiustificheFragmentSelection())
+            commit()
+        }
+    }
+
     private fun showGiustificheFragment(){
-        if( myJuniorUser.value?.dipentende?.nome =="null"){
+        if( JuniorUser.JuniorDipendente.nome =="null"){
             //ARRIVATO DIPENDENTE NULLO DA SERVER, QUANDO NON C'è UN DIPENDENTE ASSOCIATO ALL'UTENTE
             AlertDialog.Builder(this)
                 .setTitle("Non autorizzato")
@@ -499,7 +522,7 @@ class MainActivity : AppCompatActivity(){
                 .setPositiveButton("Ok", null)
                 .show()
         }
-        else if(ActivationController.permWorkFlow == "1" && myJuniorUser.value?.canWorkFlow() == true){
+        else if(ActivationController.permWorkFlow == "1" && JuniorUser.canWorkFlow()){
             setTitoloSchermata(resources.getString(R.string.menu_richiesta_giust))
             supportFragmentManager.beginTransaction().apply {
                 replace(R.id.fragmentContainerView, GiustificativiDettagliFragment())
@@ -548,6 +571,9 @@ class MainActivity : AppCompatActivity(){
 
     var lockFragments = false
     fun startRIghtFragment() {
+        if ((JuniorUser.type == "manager" || JuniorUser.type == "superAdmin" || JuniorUser.type == "admin") && JuniorUser.JuniorDipendente.nome == "null"){
+            setLastFragment(GiustificheFragmentSelection::class.simpleName, this)
+        }
         if (nuoveNotifiche){
             setLastFragment(NotificheFragment::class.simpleName, this)
         }
@@ -555,6 +581,9 @@ class MainActivity : AppCompatActivity(){
             when (getLastFragment()){
                 TimbrVirtualeFragment::class.simpleName-> {
                     showTimbrFragment()
+                }
+                GiustificheFragmentSelection::class.simpleName-> {
+                    showGiustificheDisambiguationFragment()
                 }
                 AccountFragment::class.simpleName -> {
                     showAccountFragment()
@@ -593,8 +622,9 @@ class MainActivity : AppCompatActivity(){
         finish()
     }
 
-
-    override fun onBackPressed() {
-        //NOTHING
+    private val onBackPressedCallback = object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+            //nothing
+        }
     }
 }

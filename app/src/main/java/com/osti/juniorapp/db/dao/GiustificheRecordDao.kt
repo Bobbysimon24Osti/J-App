@@ -61,6 +61,9 @@ interface GiustificheRecordDao {
 
     @Query("UPDATE giustifiche_record SET richiesto = \"approvato\" where giu_id = :id")
     fun setApprovato (id:Long)
+    @Query("UPDATE giustifiche_record SET richiesto = \"ok_livello1\" where giu_id = :id")
+    fun setApprovatoLiv1 (id:Long)
+
 
     @Query("UPDATE giustifiche_record SET richiesto = \"negato\" where giu_id = :id")
     fun setNegato (id:Long)

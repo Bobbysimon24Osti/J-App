@@ -27,6 +27,7 @@ import com.osti.juniorapp.R
 import com.osti.juniorapp.activity.MainActivity
 import com.osti.juniorapp.application.ActivationController
 import com.osti.juniorapp.application.JuniorApplication
+import com.osti.juniorapp.application.JuniorUser
 import com.osti.juniorapp.db.tables.GiustificheRecord
 import com.osti.juniorapp.db.tables.GiustificheTable
 import com.osti.juniorapp.utils.GiustificheConverter
@@ -526,7 +527,6 @@ class GiustificativiDettagliFragment : Fragment(){
                 dataFine = dataInizio
             }
 
-            val tmpUsr = JuniorApplication.myJuniorUser.value
 
 
             val tmp = GiustificheConverter.getAllGiustNoCausaleVuota()
@@ -550,15 +550,15 @@ class GiustificativiDettagliFragment : Fragment(){
                         GiustificheRecord(
                             null,
                             tmpGiust.id,
-                            JuniorApplication.myJuniorUser.value!!.dipentende!!.serverId,
+                            JuniorUser.JuniorDipendente.serverId,
                             dataInizio,
                             dataFine,
                             valore,
                             "offline",
                             editTextNote.text.toString(),
                             null,
-                            tmpUsr?.dipentende?.nome ?: "sconosciuto",
-                            tmpUsr?.dipentende?.badge ?:-1,
+                            JuniorUser.JuniorDipendente.nome,
+                            JuniorUser.JuniorDipendente.badge,
                             GiustificheConverter.getCompleteName(tmpGiust) ?:"sconosciuto",
                             GiustificheConverter.getType(tmpGiust) ?: "sconosciuto",
                             GiustificheConverter.getOrevalore(tmpGiust) ?: "ore",
@@ -617,8 +617,8 @@ class GiustificativiDettagliFragment : Fragment(){
                     !isDate(textViewEndDate.text.toString()) ||
                     (ActivationController.workFlowValoriObbligatori == "1" && (editTextStartTime.text.isBlank() || editTextEndtTime.text.isBlank())) ||
                     ((selectedGiust != null &&  GiustificheConverter.isNoteObb(selectedGiust!!)) && editTextNote.text?.isBlank() != false) ||
-                    JuniorApplication.myJuniorUser.value == null ||
-                    JuniorApplication.myJuniorUser.value!!.dipentende == null
+                    JuniorUser.userLogged ||
+                    JuniorUser.JuniorDipendente.serverId == -1L
         ){
             showMissingCampiAlert()
             return false

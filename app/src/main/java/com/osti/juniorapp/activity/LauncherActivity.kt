@@ -41,8 +41,4 @@ class LauncherActivity : AppCompatActivity() {
             .show()
     }
 
-    override fun onPause() {
-        super.onPause()
-        finish()
-    }
 }

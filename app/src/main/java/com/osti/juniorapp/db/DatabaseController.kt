@@ -3,6 +3,7 @@ package com.osti.juniorapp.db
 import android.content.Context
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import com.osti.juniorapp.application.JuniorUser
 import com.osti.juniorapp.db.resolvers.JuniorNotificheResolver
 import com.osti.juniorapp.db.tables.AngelTable
 import com.osti.juniorapp.db.tables.DipendentiTable
@@ -118,6 +119,9 @@ class DatabaseController (context: Context) {
         }
     }
     fun setLastUserId(id:String?) {
+        if(id == null){
+            JuniorUser.userLogged = false
+        }
         CoroutineScope(Dispatchers.IO).async{
             myDB.mParametriDao().setLastUserId(id)
         }
@@ -166,6 +170,7 @@ class DatabaseController (context: Context) {
     fun creaUser(user:UserTable) {
         CoroutineScope(Dispatchers.IO).async{
             myDB.mUsersDao().creaUser(user)
+            myDB.mParametriDao().setLastUserId(user.server_id)
         }
     }
     fun updateUser(user:UserTable) {
@@ -173,6 +178,8 @@ class DatabaseController (context: Context) {
             myDB.mUsersDao().setUser(user.name, user.type, user.perm_timbrature, user.perm_workflow, user.badge, user.idDipendente, user.server_id, user.nascondi_timbrature, user.livello_manager)
         }
     }
+
+
 
     /*
     TIMBRATURE
@@ -440,6 +447,12 @@ class DatabaseController (context: Context) {
             myDB.mGiustificheRecordDao().setApprovato(id)
         }
     }
+
+    fun setGiustApprovatoLiv1(id:Long){
+        CoroutineScope(Dispatchers.IO).async {
+            myDB.mGiustificheRecordDao().setApprovatoLiv1(id)
+        }
+    }
     fun setGiustNegato(id:Long){
         CoroutineScope(Dispatchers.IO).async {
             myDB.mGiustificheRecordDao().setNegato(id)
@@ -495,13 +508,10 @@ class DatabaseController (context: Context) {
         }
     }
 
-    fun getNotificheFlow() : Flow<List<NotificheTable>> {
-        return myDB.mNotificheDao().getNotificheFlow()
-    }
 
-    fun getNotificheList(observer: PropertyChangeListener) {
+    fun getNotificheList(dipId:Long, observer: PropertyChangeListener) {
         CoroutineScope(Dispatchers.IO).launch {
-            val notifiche = myDB.mNotificheDao().getNotificheList()
+            val notifiche = myDB.mNotificheDao().getNotificheList(dipId)
             observer.propertyChange(PropertyChangeEvent("DATABASE CONTROLLER", "GET NOTIFICHE LIST", notifiche, notifiche))
         }
     }

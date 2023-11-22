@@ -2,7 +2,9 @@ package com.osti.juniorapp.thread
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import com.osti.juniorapp.application.ActivationController
 import com.osti.juniorapp.application.JuniorApplication
+import com.osti.juniorapp.application.JuniorUser
 import com.osti.juniorapp.network.NetworkController
 import com.osti.juniorapp.db.ParamManager
 import com.osti.juniorapp.network.NetworkNotifiche
@@ -117,34 +119,44 @@ class RiceviDatiThread : Thread() {
 
     val loginObs = PropertyChangeListener{
         if(it.propertyName == "OK" && it.newValue!= null && it.oldValue != null){
+            JuniorUser.userLogged = true
             val datas = it.newValue as JsonObject
             val params = (it.oldValue as Response<JsonElement>).body()?.asJsonObject!!
-            JuniorApplication.updateUserParams(params, datas.get("serverId").asString, datas.get("key").asString)
+            JuniorApplication.updateUserParams(params, datas.get("serverId").asString)
             if(params.has("versione_jweb")){
                 ParamManager.setVersioneJW(params.get("versione_jweb").asString)
             }
 
+
+
             //Invio timbrature e giustificazioni
             if(JuniorApplication.invioDatiThread == null){
-                JuniorApplication.invioDatiThread = InvioDatiThread(JuniorApplication.myJuniorUser.value?.dipentende?.serverId ?: -1)
+                JuniorApplication.invioDatiThread = InvioDatiThread(JuniorUser.JuniorDipendente.serverId)
                 JuniorApplication.inviaDati()
             }
 
             //Scarico Giustificazioni
-            NetworkController.getGiustifiche(giustificheObs)
+            if (ActivationController.permWorkFlow == "1"){
+                NetworkController.getGiustifiche(giustificheObs)
+            }
+            else{
+                isDownloading.setGiust(false)
+            }
 
             //Scarico notifiche
             val network = NetworkNotifiche(NetworkController.apiCliente)
             network.getnotifiche(notificheObs)
+
+            JuniorApplication.subscribeToFirebaseNotification()
         }
     }
 
-    fun downloadFromServer(serverId:String? = null, key:String? = null){if(!isDownloading.getDownloading()){
+    fun downloadFromServer(serverId:String? = null, key:String? = null){
+        if(!isDownloading.getDownloading()){
         isDownloading.setDownloadOn()
         if(serverId == null || key == null){
-            val user = JuniorApplication.myJuniorUser
-            if(user != null){
-                NetworkController.login(user.value!!.serverIdUser, user.value!!.key, obs = loginObs)
+            if(JuniorUser.userLogged){
+                NetworkController.login(JuniorUser.serverIdUser, JuniorUser.key, obs = loginObs)
             }
         }
         else{

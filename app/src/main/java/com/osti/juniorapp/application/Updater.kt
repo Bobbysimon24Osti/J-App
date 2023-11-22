@@ -15,17 +15,17 @@ object Updater {
             if(it.newValue is Response<*> && (it.newValue as Response<*>).isSuccessful){
                 StatusController.setOlineOSTI()
                 if(ActivationController.checkResult(it) == ActivationController.ATTIVA){
-                    JuniorApplication.riceviDati(JuniorApplication.myJuniorUser.value?.serverIdUser, JuniorApplication.myJuniorUser.value?.key)
+                    JuniorApplication.riceviDati(JuniorUser.serverIdUser, JuniorUser.key)
                     JuniorApplication.inviaDati()
                 }
                 else if (ActivationController.checkResult(it) == ActivationController.NOATTIVA){
                     activity.startActivity(Intent(activity, ActivationActivity::class.java))
-                    JuniorApplication.setLastUser(null)
+                    JuniorApplication.myDatabaseController.setLastUserId(null)
                     activity.finish()
                 }
                 else if (ActivationController.checkResult(it) == ActivationController.LOGOUT){
                     activity.startActivity(Intent(activity, LoginActivity::class.java))
-                    JuniorApplication.setLastUser(null)
+                    JuniorApplication.myDatabaseController.setLastUserId(null)
                     activity.finish()
                 }
             }
@@ -36,7 +36,7 @@ object Updater {
     }
 
     fun updateNoCheck(){
-        JuniorApplication.riceviDati(JuniorApplication.myJuniorUser.value?.serverIdUser, JuniorApplication.myJuniorUser.value?.key)
+        JuniorApplication.riceviDati(JuniorUser.serverIdUser, JuniorUser.key)
         JuniorApplication.inviaDati()
     }
 }

@@ -36,7 +36,8 @@
         <activity
             android:name=".activity.LauncherActivity"
             android:exported="true"
-            android:screenOrientation="sensorPortrait" >
+            android:screenOrientation="sensorPortrait"
+            android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

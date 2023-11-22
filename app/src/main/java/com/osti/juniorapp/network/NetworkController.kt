@@ -7,6 +7,7 @@ import com.google.gson.JsonObject
 import com.osti.juniorapp.BuildConfig
 import com.osti.juniorapp.application.ActivationController
 import com.osti.juniorapp.application.JuniorApplication
+import com.osti.juniorapp.application.JuniorUser
 import com.osti.juniorapp.application.StatusController
 import com.osti.juniorapp.application.StatusController.setOfflineCLI
 import com.osti.juniorapp.application.StatusController.setOfflineOSTI
@@ -16,6 +17,7 @@ import com.osti.juniorapp.db.ParamManager
 import com.osti.juniorapp.db.tables.GiustificheRecord
 import com.osti.juniorapp.db.tables.NomiFileTable
 import com.osti.juniorapp.db.tables.TimbrTable
+import com.osti.juniorapp.thread.InvioDatiThread
 import com.osti.juniorapp.utils.Generator
 import com.osti.juniorapp.utils.LogController
 import com.osti.juniorapp.utils.MyBase64
@@ -180,7 +182,7 @@ object NetworkController {
                     //NON AUTORIZZATO, IL SERVER RIFIUTA LA CONNESSIONE PER PROBLEMI DI AUTORIZZAZIONE; DI SOLITO QUANDO SI CAMBIA URL E L'UTENTE E LOGGATO SUL VECCHIO SERVER
                     log.insertLog("Errore in fase di richiesta parametri user (codice err. 201)")
                     observer.propertyChange(PropertyChangeEvent("NetworkController", "ERR-AUTH",  response, result))
-                    JuniorApplication.setLastUser(null)
+                    JuniorApplication.myDatabaseController.setLastUserId(null)
                     StatusController.setOlineCLI()
                 }
                 else{
@@ -212,7 +214,6 @@ object NetworkController {
             val i = ParamManager.getGuid()!!
             val h = ParamManager.getCodice()!!
             ParamManager.setDatabase(archivio)
-
             var tm2 = "Basic " + MyBase64.encode("$user:$psw".encodeToByteArray())
            if(tm2.substring(tm2.length-1) == "\n"){
                tm2 = tm2.dropLast(2)
@@ -250,7 +251,7 @@ object NetworkController {
     private class FirstLoginCallaback(val observer: PropertyChangeListener): Callback<JsonElement> {
         override fun onResponse(call: Call<JsonElement>, response: Response<JsonElement>) {
             log.insertLog("Richiesta PRIMO LOGIN: OK")
-            setOlineCLI()
+
             observer.propertyChange(PropertyChangeEvent("NetworkController", "firstlogin",  response, response))
             isFirstLoginOnGoing = false
         }
@@ -273,8 +274,8 @@ object NetworkController {
                     val tmp = TimbrRequest(timbr, guid, db)
                     val call = apiCliente?.sendTImbrature(
                         db,
-                        JuniorApplication.myJuniorUser.value!!.getServerId() ?: "null",
-                        JuniorApplication.myJuniorUser.value!!.getserverKey() ?: "null",
+                        JuniorUser.serverIdUser,
+                        JuniorUser.key,
                         guid,
                         codice ?: "null",
                         BuildConfig.VERSION_NAME,
@@ -289,12 +290,14 @@ object NetworkController {
 
     private class TimbrCallaback(val id_timbr:Int): Callback<JsonElement> {
         override fun onResponse(call: Call<JsonElement>, response: Response<JsonElement>) {
+            InvioDatiThread.lastSendId = -1
             setOlineCLI()
             var tmp = response.body()?.asJsonObject
             val error = response.errorBody()?.byteString()
             if (tmp != null) {
                 if (response.code() == 201 && tmp.get("insert").asString == "ok"){
                     JuniorApplication.setTimbrOnServer(id_timbr)
+                    InvioDatiThread.lastSendId = id_timbr
                     log.insertLog("SALVATAGGIO TIMBRATURA (id: $id_timbr) SU SERVER: OK")
                 }
 
@@ -308,6 +311,7 @@ object NetworkController {
         }
 
         override fun onFailure(call: Call<JsonElement>, t: Throwable) {
+            InvioDatiThread.lastSendId = -1
             setOfflineCLI()
             log.insertLog("Richiesta SALVATAGGIO TIMBRATURA SU SERVER: ERROR (codice err. 304)-> cause: ${t.cause}   msg: ${t.message}")
         }
@@ -335,11 +339,11 @@ object NetworkController {
             else{0}
         }
 
-        private var normalCk: String
+
         var ck :String
 
         init{
-            normalCk = tipo.trim(' ') +
+            val normalCk = tipo.trim(' ') +
                     transponder.trim(' ') +
                     anno?.trim(' ') +
                     mese?.trim(' ')+
@@ -375,8 +379,8 @@ object NetworkController {
                 val tmp = GiustRequest(giustifica)
                 val call = apiCliente?.sendGiustifiche(
                     db,
-                    JuniorApplication.myJuniorUser.value!!.getServerId() ?: "null",
-                    JuniorApplication.myJuniorUser.value!!.getserverKey() ?: "null",
+                    JuniorUser.serverIdUser,
+                    JuniorUser.key,
                     guid,
                     codice ?: "null",
                     BuildConfig.VERSION_NAME,
@@ -421,8 +425,8 @@ object NetworkController {
             if(guid!= null && db != null){
                 val call = apiCliente?.getGiustifiche(
                     db,
-                    JuniorApplication.myJuniorUser.value?.getServerId() ?: "null",
-                    JuniorApplication.myJuniorUser.value?.getserverKey() ?: "null",
+                    JuniorUser.serverIdUser,
+                    JuniorUser.key,
                     guid,
                     codice ?: "null",
                     BuildConfig.VERSION_NAME,
@@ -480,8 +484,8 @@ object NetworkController {
                 val request = DeleteRequest(giust)
                 val call = apiCliente?.deleteGiustifica(
                     db,
-                    JuniorApplication.myJuniorUser.value?.getServerId() ?: "null",
-                    JuniorApplication.myJuniorUser.value?.getserverKey() ?: "null",
+                    JuniorUser.serverIdUser,
+                    JuniorUser.key,
                     guid,
                     codice ?: "null",
                     BuildConfig.VERSION_NAME,
@@ -537,8 +541,8 @@ object NetworkController {
             if(guid!= null){
                 val call = apiCliente?.getFileNames(
                     db,
-                    JuniorApplication.myJuniorUser.value?.getServerId() ?: "null",
-                    JuniorApplication.myJuniorUser.value?.getserverKey() ?: "null",
+                    JuniorUser.serverIdUser,
+                    JuniorUser.key,
                     guid,
                     codice ?: "null",
                     BuildConfig.VERSION_NAME,
@@ -575,8 +579,8 @@ object NetworkController {
             if(guid!= null){
                 val call = apiCliente?.getFile(
                     db,
-                    JuniorApplication.myJuniorUser.value?.getServerId() ?: "null",
-                    JuniorApplication.myJuniorUser.value?.getserverKey() ?: "null",
+                    JuniorUser.serverIdUser,
+                    JuniorUser.key,
                     guid,
                     codice ?: "null",
                     BuildConfig.VERSION_NAME,
@@ -598,8 +602,8 @@ object NetworkController {
             if(guid!= null){
                 val call = apiCliente?.getCartellino(
                     db,
-                    JuniorApplication.myJuniorUser.value?.getServerId() ?: "null",
-                    JuniorApplication.myJuniorUser.value?.getserverKey() ?: "null",
+                    JuniorUser.serverIdUser,
+                    JuniorUser.key,
                     guid,
                     codice ?: "null",
                     BuildConfig.VERSION_NAME,
@@ -671,8 +675,8 @@ object NetworkController {
             if(guid!= null){
                 val call = apiCliente?.inviaRisposta(
                     db,
-                    JuniorApplication.myJuniorUser.value?.getServerId() ?: "null",
-                    JuniorApplication.myJuniorUser.value?.getserverKey() ?: "null",
+                    JuniorUser.serverIdUser,
+                    JuniorUser.key,
                     guid,
                     codice ?: "null",
                     BuildConfig.VERSION_NAME,
@@ -762,7 +766,7 @@ object NetworkController {
 
     fun testServerCliente(observer:PropertyChangeListener) {
         istantiateapi()
-        if (apiCliente != null && JuniorApplication.myJuniorUser.value != null) {
+        if (apiCliente != null && JuniorUser.userLogged) {
             val guid = ParamManager.getGuid()
             val db = ParamManager.getArchivio()
             val codice = ParamManager.getCodice()
@@ -770,8 +774,8 @@ object NetworkController {
                 val tmp = ""
                 val call = apiCliente?.testServerCliente(
                     db,
-                    JuniorApplication.myJuniorUser.value!!.getServerId() ?: "null",
-                    JuniorApplication.myJuniorUser.value!!.getserverKey() ?: "null",
+                    JuniorUser.serverIdUser,
+                    JuniorUser.key,
                     guid,
                     codice ?: "null",
                     BuildConfig.VERSION_NAME,

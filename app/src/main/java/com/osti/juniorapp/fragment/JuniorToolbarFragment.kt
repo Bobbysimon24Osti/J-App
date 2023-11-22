@@ -11,6 +11,7 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import com.osti.juniorapp.R
 import com.osti.juniorapp.application.JuniorApplication
+import com.osti.juniorapp.application.JuniorUser
 
 class JuniorToolbarFragment : Fragment() {
 
@@ -35,7 +36,7 @@ class JuniorToolbarFragment : Fragment() {
 
             drawer = activity?.findViewById(R.id.drawer_layout)
 
-            nameTextView.text = JuniorApplication.myJuniorUser.value?.dipentende?.nome ?: "ERROR"
+            nameTextView.text = JuniorUser.JuniorDipendente.nome
         }
     }
 

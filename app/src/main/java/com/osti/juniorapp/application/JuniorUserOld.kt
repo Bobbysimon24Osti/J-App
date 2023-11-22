@@ -5,7 +5,7 @@ import com.osti.juniorapp.db.tables.UserTable
 import java.beans.PropertyChangeEvent
 import java.beans.PropertyChangeListener
 
-class JuniorUserOld{
+/*class JuniorUserOld{
 
 
     class JuniorDip {
@@ -253,4 +253,4 @@ class JuniorUserOld{
         result = 31 * result + (dipentende?.hashCode() ?: 0)
         return result
     }
-}
+}*/

@@ -16,8 +16,8 @@ interface NotificheDao {
     @Query("SELECT * from notifiche")
     fun getNotificheFlow() : Flow<List<NotificheTable>>
 
-    @Query("SELECT * from notifiche ORDER BY n_dataora_creata DESC")
-    fun getNotificheList() : List<NotificheTable>
+    @Query("SELECT * from notifiche WHERE n_ute_id_destinatario = :dipId ORDER BY n_dataora_creata DESC")
+    fun getNotificheList(dipId:Long) : List<NotificheTable>
 
     @Query("UPDATE notifiche SET n_dataora_letta_app = :dataOra WHERE n_id_record_notifica = :id" )
     fun setDataLettura(id:Long, dataOra:String)

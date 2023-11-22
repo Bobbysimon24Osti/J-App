@@ -35,7 +35,7 @@ import com.osti.juniorapp.BuildConfig
 import com.osti.juniorapp.R
 import com.osti.juniorapp.application.ActivationController
 import com.osti.juniorapp.application.JuniorApplication
-import com.osti.juniorapp.application.JuniorUserOld
+import com.osti.juniorapp.application.JuniorUser
 import com.osti.juniorapp.db.tables.DipendentiTable
 import com.osti.juniorapp.db.tables.GiustificheTable
 import com.osti.juniorapp.db.tables.TimbrTable
@@ -78,15 +78,12 @@ class TimbrVirtualeFragment () : Fragment() {
         if(arguments != null){
             JuniorApplication.myDatabaseController.getDipendente(requireArguments().getLong("serverId", -1)){
                 if(it.newValue != null){
-                    dipendente = JuniorUserOld.JuniorDip(it.newValue as DipendentiTable)
-
                     initStampObserver()
                 }
             }
         }
     }
 
-    lateinit var dipendente: JuniorUserOld.JuniorDip
 
     var causale: GiustificheTable? = null
 
@@ -145,6 +142,7 @@ class TimbrVirtualeFragment () : Fragment() {
             imageViewOnServer.visibility = View.INVISIBLE
             textViewServer.visibility = View.INVISIBLE
 
+            initSpinner(requireContext())
         }
 
         /*val i = Calendar.getInstance()
@@ -159,8 +157,6 @@ class TimbrVirtualeFragment () : Fragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-
-        initSpinner(context)
 
         initPermissionRequest(context)
 
@@ -181,19 +177,19 @@ class TimbrVirtualeFragment () : Fragment() {
 
     val configFlow = JuniorApplication.myDatabaseController.getSpinnerConfigFlow()
 
-    private fun observeLastStamp(dipendente: JuniorUserOld.JuniorDip?){
+    private fun observeLastStamp(){
         CoroutineScope(Dispatchers.IO).async {
             observer.collect{
-                refreshDatas(dipendente)
+                refreshDatas()
             }
         }
     }
 
     private fun initStampObserver(){
             //OBSERVER NUOVE TIMBRATURE
-            refreshDatas(dipendente)
-            observer = JuniorApplication.myDatabaseController.getlastStampDipendenteLive(dipendente.serverId)
-            observeLastStamp(dipendente)
+            refreshDatas()
+            observer = JuniorApplication.myDatabaseController.getlastStampDipendenteLive(JuniorUser.JuniorDipendente.serverId)
+            observeLastStamp()
     }
 
     fun observeCoonfigs(){
@@ -287,9 +283,9 @@ class TimbrVirtualeFragment () : Fragment() {
         }
     }
 
-    private fun refreshDatas(dipendente: JuniorUserOld.JuniorDip?) {
-        if (dipendente != null) {
-            JuniorApplication.myDatabaseController.getlastStampDipendente(dipendente.serverId){
+    private fun refreshDatas() {
+        if (JuniorUser.JuniorDipendente.serverId != -1L) {
+            JuniorApplication.myDatabaseController.getlastStampDipendente(JuniorUser.JuniorDipendente.serverId){
                 activity?.runOnUiThread {
                     if(it.newValue != null){
                         val tmpTimbr = it.newValue as TimbrTable
@@ -368,7 +364,7 @@ class TimbrVirtualeFragment () : Fragment() {
             }
         }
         else {
-            if (JuniorApplication.myJuniorUser.value?.positionObb() == true && licGps == true) {
+            if (JuniorUser.positionObb() && licGps == true) {
                 dismissButton()
                 showPositionMissingAlert()
             }
@@ -415,9 +411,7 @@ class TimbrVirtualeFragment () : Fragment() {
 
     fun onClickTimbra(view: View) {
         if (!isOpenRecently()) {
-            if (ActivationController.canTimbrGps() &&
-                JuniorApplication.myJuniorUser.value?.positionObb() == true &&
-                ActivityCompat.checkSelfPermission(
+            if (ActivationController.canTimbrGps() && JuniorUser.positionObb() && ActivityCompat.checkSelfPermission(
                     requireActivity(),
                     Manifest.permission.ACCESS_FINE_LOCATION
                 ) == PackageManager.PERMISSION_GRANTED
@@ -538,7 +532,7 @@ class TimbrVirtualeFragment () : Fragment() {
     private fun saveStamp(location: Location? = Location("NOPOS")) {
         try {
             stopProgressBar()
-            if ((location == null || location.provider == "NOPOS") && JuniorApplication.myJuniorUser.value!!.positionObb()) {
+            if ((location == null || location.provider == "NOPOS") && JuniorUser.positionObb()) {
                 alertNoPosObbligatoria()
             }
             else{
@@ -611,7 +605,7 @@ class TimbrVirtualeFragment () : Fragment() {
 
     private fun saveInDatabase(lat: Double?, lon: Double?, acc: Int?) {
         val timbr = TimbrTable(
-            JuniorApplication.myJuniorUser.value!!.dipentende?.serverId.toString(),
+            JuniorUser.JuniorDipendente.serverId.toString(),
             FORMATDATEHOURS.format(Calendar.getInstance().timeInMillis),
             lat ?: 0.0,
             lon ?: 0.0,

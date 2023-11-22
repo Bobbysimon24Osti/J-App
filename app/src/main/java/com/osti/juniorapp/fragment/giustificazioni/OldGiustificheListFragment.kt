@@ -16,6 +16,7 @@ import com.osti.juniorapp.R
 import com.osti.juniorapp.activity.MainActivity
 import com.osti.juniorapp.application.ActivationController
 import com.osti.juniorapp.application.JuniorApplication
+import com.osti.juniorapp.application.JuniorUser
 import com.osti.juniorapp.application.StatusController
 import com.osti.juniorapp.db.tables.GiustificheRecord
 import com.osti.juniorapp.thread.RiceviDatiThread
@@ -54,9 +55,8 @@ class OldGiustificheListFragment : Fragment() {
 
             refreshView = v.findViewById(R.id.refreshLayout_giust)
 
-            val dip = JuniorApplication.myJuniorUser.value?.dipentende
-            if(dip!=null){
-                giustFlow = JuniorApplication.myDatabaseController.getGiustFlow(dip.serverId)
+            if(JuniorUser.JuniorDipendente.serverId!=-1L){
+                giustFlow = JuniorApplication.myDatabaseController.getGiustFlow(JuniorUser.JuniorDipendente.serverId)
             }
             listenToChanges()
 
@@ -135,9 +135,8 @@ class OldGiustificheListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val dip = JuniorApplication.myJuniorUser.value?.dipentende
-        if(dip != null) {
-            JuniorApplication.myDatabaseController.getAllGiustByDip(dip.serverId){
+        if(JuniorUser.JuniorDipendente.serverId != -1L) {
+            JuniorApplication.myDatabaseController.getAllGiustByDip(JuniorUser.JuniorDipendente.serverId){
                 if(it.newValue != null){
                     showRecyclerView(it.newValue as List<GiustificheRecord>)
                 }

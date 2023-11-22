@@ -1,11 +1,18 @@
 package com.osti.juniorapp.application
 
+import androidx.lifecycle.MutableLiveData
 import com.osti.juniorapp.db.tables.DipendentiTable
 import com.osti.juniorapp.db.tables.UserTable
+import okhttp3.internal.notify
 import java.beans.PropertyChangeEvent
 import java.beans.PropertyChangeListener
 
-object JuiorUser {
+object JuniorUser {
+
+
+    var userLogged = false
+
+    var updated = MutableLiveData(false)
 
     var serverIdUser :String = "null"
     var key:String = "null"
@@ -16,7 +23,6 @@ object JuiorUser {
     var permCartellino:String = "0"
     var nascondiTimbrature : String = "0"
     var livelloManager : String = "unico"
-
     object JuniorDipendente{
         var nome: String = "null"
         var badge:Int = -1
@@ -26,7 +32,7 @@ object JuiorUser {
     }
 
     fun saveUserOnDb(){
-        val tmpUserTable = UserTable(serverIdUser, name, type, permTimbrature, permWorkFlow, permCartellino, JuniorDipendente.badge, JuniorDipendente.serverId, livelloManager)
+        val tmpUserTable = UserTable(serverIdUser ?:"-1", name ?:"null", type?:"null", permTimbrature?:"null", permWorkFlow?:"null", permCartellino?:"null", JuniorDipendente.badge, JuniorDipendente.serverId, livelloManager?:"null")
         JuniorApplication.myDatabaseController.creaUser(tmpUserTable)
     }
 
@@ -38,9 +44,10 @@ object JuiorUser {
     fun saveAllOnDb(){
         saveUserOnDb()
         saveDipOnDb()
+        updated.value = true
     }
 
-    fun getUserFromDb(id:String, observer: PropertyChangeListener) {
+    fun getUserFromDb(id:String, observer: PropertyChangeListener? = null) {
         JuniorApplication.myDatabaseController.getUser(id) {
             if (it.newValue != null) {
                 val tmpUser = it.newValue as UserTable
@@ -65,8 +72,56 @@ object JuiorUser {
                     }
                 }
             }
-            observer.propertyChange(PropertyChangeEvent("JUNIOR USER", "JUNIOR USER", null, null))
+            observer?.propertyChange(PropertyChangeEvent("JUNIOR USER", "JUNIOR USER", null, null))
         }
+    }
+
+    fun toUserTable (): UserTable{
+        return UserTable(serverIdUser?:"-1",
+                name?:"null",
+                type?:"null",
+                permTimbrature,
+                permWorkFlow,
+                permCartellino,
+            JuniorDipendente.badge,
+            JuniorDipendente.serverId,
+                nascondiTimbrature,
+                livelloManager)
+    }
+
+    fun parseAndSaveUserTable(user:UserTable?){
+        if(user!= null && user != toUserTable()){
+            serverIdUser = user.server_id
+            key = JuniorApplication.myKeystore.activeKey!!
+            name = user.name
+            type = user.type
+            permTimbrature = user.perm_timbrature
+            permWorkFlow = user.perm_workflow
+            permCartellino = user.perm_cartellino
+            nascondiTimbrature = user.perm_timbrature
+            livelloManager = user.livello_manager
+        }
+    }
+
+    fun canTimbr():Boolean{
+        if(permTimbrature == "coordinate" || permTimbrature == "qualsiasi"){
+            return true
+        }
+        return false
+    }
+
+    fun canWorkFlow():Boolean{
+        if(permWorkFlow == "1"){
+            return true
+        }
+        return false
+    }
+
+    fun positionObb():Boolean{
+        if(permTimbrature == "coordinate"){
+            return true
+        }
+        return false
     }
 
 }

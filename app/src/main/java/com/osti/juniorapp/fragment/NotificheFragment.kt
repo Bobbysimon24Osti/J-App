@@ -16,6 +16,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.osti.juniorapp.R
 import com.osti.juniorapp.activity.MainActivity
 import com.osti.juniorapp.application.JuniorApplication
+import com.osti.juniorapp.application.JuniorUser
 import com.osti.juniorapp.db.tables.GiustificheRecord
 import com.osti.juniorapp.db.tables.NotificheTable
 import com.osti.juniorapp.fragment.giustificazioni.DettagliOldGiustificativiFragment
@@ -50,6 +51,7 @@ class NotificheFragment : Fragment() {
     }
 
     private fun init(v:View){
+
         containerDettagli = v.findViewById(R.id.fragmentContainerView_notificheGiust)
 
         refresher = v.findViewById(R.id.refresh_notifiche)
@@ -59,7 +61,9 @@ class NotificheFragment : Fragment() {
         textViewNoNotifiche = v.findViewById(R.id.textView_noNotifiche)
 
 
-        refresher.setOnRefreshListener(this::refresh)
+        refresher.setOnRefreshListener {
+            refresh()
+        }
         //listenToNotifiche()
         refresh()
     }
@@ -68,7 +72,7 @@ class NotificheFragment : Fragment() {
         notificheNetwork.getnotifiche{
             if (it.newValue is Deferred<*>){
                 (it.newValue as Deferred<Unit>).invokeOnCompletion {
-                    JuniorApplication.myDatabaseController.getNotificheList{
+                    JuniorApplication.myDatabaseController.getNotificheList(JuniorUser.JuniorDipendente.serverId){
                         refresher.isRefreshing = false
                         if(it.newValue is List<*>){
                             adapt(it.newValue as List<NotificheTable?>)
@@ -79,15 +83,6 @@ class NotificheFragment : Fragment() {
         }
     }
 
-    fun listenToNotifiche(){
-        MainScope().async {
-            JuniorApplication.myDatabaseController.getNotificheFlow().collect{
-                if (it is List<*>) {
-                    adapt(it)
-                }
-            }
-        }
-    }
 
     private fun adapt(list:List<NotificheTable?>) = activity?.runOnUiThread{
         if(isAdded){
@@ -130,7 +125,7 @@ class NotificheFragment : Fragment() {
         }
 
         override fun onBindViewHolder(holder: RecyclerViewHolder, position: Int) {
-            if(list!= null && list.isNotEmpty() && list[position]?.n_ute_id_destinatario.toString() == JuniorApplication.myJuniorUser.value?.serverIdUser){
+            if(list!= null && list.isNotEmpty() && list[position]?.n_ute_id_destinatario.toString() == JuniorUser.serverIdUser){
                 val notifica = list[position]
                 val net = NetworkNotifiche(NetworkController.apiCliente)
                 if(notifica?.n_dataora_letta_app?.replace("\"", "") == "0000-00-00 00:00:00"){

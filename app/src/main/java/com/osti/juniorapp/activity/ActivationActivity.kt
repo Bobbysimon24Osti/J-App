@@ -60,7 +60,7 @@ class ActivationActivity : AppCompatActivity() {
                             ParamManager.setCodice(response0.get("codice_attivazione").asString)
                             ParamManager.setUrl(response0.get("url").asString)
                             ParamManager.setTipoApp(response0.get("tipo_applicazione").asString)
-                            JuniorApplication.setLastUser(JuniorApplication.myJuniorUser.value)
+                            //JuniorApplication.setLastUser(JuniorApplication.myJuniorUser.value)
 
                             //CODICE VERIFICATO VIENE SALVATO E AVVIATA LA MAIN ACTIVITY
                             openLogin()

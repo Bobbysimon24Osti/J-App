@@ -9,7 +9,7 @@ import retrofit2.http.*
 interface ApiCliente {
 
 
-    @Headers("Content-Type: application/json")
+    @Headers("Content-Type: application/json; charset=utf-8")
     @GET("login.php")
     fun firstLogin(
         @Header("X-Db") db:String,

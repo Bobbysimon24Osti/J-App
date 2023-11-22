@@ -5,7 +5,6 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.location.LocationManager
-import androidx.lifecycle.MutableLiveData
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.ktx.messaging
 import com.google.gson.JsonArray
@@ -19,6 +18,7 @@ import com.osti.juniorapp.application.ActivationController.checkResult
 import com.osti.juniorapp.application.ActivationController.saveValore
 import com.osti.juniorapp.network.NetworkController
 import com.osti.juniorapp.db.DatabaseController
+import com.osti.juniorapp.db.JuniorDatabase_Impl
 import com.osti.juniorapp.db.ParamManager
 import com.osti.juniorapp.db.tables.GiustificheTable
 import com.osti.juniorapp.db.tables.JuniorConfigTable
@@ -30,9 +30,10 @@ import com.osti.juniorapp.thread.RiceviDatiThread
 import com.osti.juniorapp.utils.GiustificheConverter
 import com.osti.juniorapp.utils.LogController
 import com.osti.juniorapp.utils.Utils
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.json.JSONArray
 import org.json.JSONObject
@@ -136,7 +137,6 @@ class JuniorApplication : Application() {
         var invioDatiThread:InvioDatiThread? = null
         var riceviDatiThread:RiceviDatiThread? = null
 
-        var myJuniorUser: MutableLiveData<JuniorUserOld?> = MutableLiveData(null)
         var isUserChecked = false
 
         fun setAppActivated() {
@@ -164,45 +164,52 @@ class JuniorApplication : Application() {
 
         /** Invio sia timbrature che giustificazioni*/
         fun inviaDati() {
-            if (ActivationController.isActivated()
-                && myJuniorUser.value != null){
+            if (ActivationController.isActivated() && JuniorUser.userLogged){
                 invioDatiThread?.isGiustStarted = false
                 invioDatiThread?.isTimbrStarted = false
                 invioDatiThread?.checkForSending()
             }
         }
 
-        fun riceviDati(serverId:String? = null, key:String? = null){
-            if(serverId != null || key != null){
+        fun riceviDati(serverId:String = "null", key:String = "null"){
+            if(serverId != "null" || key != "null"){
                 riceviDatiThread?.downloadFromServer(serverId, key)
             }
-            else if (ActivationController.isActivated()
-                && myJuniorUser.value != null){
+            else if (ActivationController.isActivated() && JuniorUser.userLogged){
                 riceviDatiThread?.downloadFromServer()
             }
         }
 
-        fun setLastUser(user: JuniorUserOld?){
-            unSubscribeToFirebaseNotification()
-            if(user== null){
+        /*fun setLastUser(usr: UserTable?){
+            if(usr== null){
+                unSubscribeToFirebaseNotification()
                 isUserChecked = false
             }
-            ParamManager.setLastUserId(user?.getServerId())
-            myJuniorUser.value = user
-        }
+            ParamManager.setLastUserId(usr?.server_id)
+            JuniorUser.parseAndSaveUserTable(usr)
+        }*/
 
         fun updateUserOnDb(user:UserTable){
             myDatabaseController.updateUser(user)
         }
-        fun updateUserParams(params: JsonObject, serverId:String, key:String){
+        fun updateUserParams(params: JsonObject, serverId:String){
+            val oldUser = JuniorUser.toUserTable()
+            JuniorUser.serverIdUser = serverId
             val utente = params.get("utente")?.asJsonObject ?: return
             val name = utente.get("ute_nome")?.asString?: return
+            JuniorUser.name = name
             val type = utente.get("ute_accesso")?.asString?: return
+            JuniorUser.type = type
             val permTimbratura = utente.get("ute_timbrvirtuale")?.asString?: return
+            JuniorUser.permTimbrature = permTimbratura
             val permWorkFlow = utente.get("ute_workflow")?.asString?: return
+            JuniorUser.permWorkFlow = permWorkFlow
             val permCartellino = utente.get("ute_cartellini")?.asString?: return
+            JuniorUser.permCartellino = permCartellino
             val serverIdDipendente = utente.get("ute_dipautorizzato")?.asLong ?:return
+            JuniorUser.JuniorDipendente.serverId = serverIdDipendente
             val nascondiTimbrature = utente.get("ute_nasconditimbrature")?.asString ?:return
+            JuniorUser.nascondiTimbrature = nascondiTimbrature
 
             val livelloManager = let{
                 if(utente.has("ute_liv_manager") && !utente.get("ute_liv_manager").isJsonNull){
@@ -212,9 +219,19 @@ class JuniorApplication : Application() {
                     "null"
                 }
             }
+            JuniorUser.livelloManager = livelloManager
 
             val jsDipendente = params.get("dipendente")?.asJsonObject?: return
-            val newDip = createDip(jsDipendente, serverIdDipendente)
+
+            val dipBadge = jsDipendente.get("dip_badge").asInt
+            JuniorUser.JuniorDipendente.badge = dipBadge
+            val dipName = jsDipendente.get("dip_nome").asString
+            JuniorUser.JuniorDipendente.nome = dipName
+            val dipLicenziato = jsDipendente.get("dip_licenziato").asString
+            JuniorUser.JuniorDipendente.licenziato = dipLicenziato
+            val dipAssunto = jsDipendente.get("dip_assunto").asString
+            JuniorUser.JuniorDipendente.assunto = dipAssunto
+
 
             val jsConfig = params.get("parametri")?.asJsonObject?: return
             if(jsConfig.has("versione_jweb")){
@@ -225,41 +242,25 @@ class JuniorApplication : Application() {
             val jsGiustificativi = params.get("giustificativi")?.asJsonArray?: return
             checkGiustifiche(jsGiustificativi)
 
-            //Verifica se i dati sono uguali o vanno ad aggiornare effettivamente qualcosa
-            val oldUser = myJuniorUser.value
-            val newUser = JuniorUserOld(
-                serverId,
-                key,
-                name,
-                type,
-                permTimbratura,
-                permWorkFlow,
-                permCartellino,
-                nascondiTimbrature,
-                livelloManager,
-                newDip
-            )
-
-            if (oldUser.hashCode() != newUser.hashCode()){
-                setLastUser(newUser)
+            if(oldUser != JuniorUser.toUserTable()){
+                JuniorUser.saveAllOnDb()
             }
             //context.startActivity(Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
             //activity.finish()
-            val strPIvaDb = jsConfig.get("lic_piva").asString + "_" + ParamManager.getArchivio()
-            val strUserId = "ute_id_" + newUser.serverIdUser
-
-            //Iscrivo alle notifiche dell'utente l'app
-            subscribeToFirebaseNotification()
         }
 
         fun subscribeToFirebaseNotification(){
-            Firebase.messaging.subscribeToTopic(getStrPIva())
-            Firebase.messaging.subscribeToTopic(getStrUserId())
+            CoroutineScope(Dispatchers.Default).launch {
+                Firebase.messaging.subscribeToTopic(getStrPIva())
+                Firebase.messaging.subscribeToTopic(getStrUserId())
+            }
         }
 
         fun unSubscribeToFirebaseNotification(){
-            Firebase.messaging.unsubscribeFromTopic(getStrPIva())
-            Firebase.messaging.unsubscribeFromTopic(getStrUserId())
+            CoroutineScope(Dispatchers.Default).launch {
+                Firebase.messaging.unsubscribeFromTopic(getStrPIva())
+                Firebase.messaging.unsubscribeFromTopic(getStrUserId())
+            }
         }
 
         private fun getStrPIva() : String{
@@ -268,7 +269,7 @@ class JuniorApplication : Application() {
         }
 
         private fun getStrUserId() : String{
-            return "ute_id_" + (myJuniorUser.value?.serverIdUser ?: -1)
+            return "ute_id_" + (JuniorUser.serverIdUser)
         }
 
         fun updateLocalGiust (datas:JsonArray){
@@ -316,34 +317,6 @@ class JuniorApplication : Application() {
             myDatabaseController.creaMultipleConfig(newConfigs)
         }
 
-        private fun createDip(dip:JsonObject, id:Long) : JuniorUserOld.JuniorDip {
-
-            val dipName:String = try{
-                dip.get("dip_nome")?.asString?: "null"
-            } catch (e:Exception){
-                "null"
-            }
-
-            val badge:Int = try{
-                dip.get("dip_badge").asInt
-            } catch (e:Exception){
-                -1
-            }
-            val assunto:String = try{
-                dip.get("dip_assunto").asString
-            } catch (e:Exception){
-                "null"
-            }
-
-            val licenziato:String = try{
-                dip.get("dip_licenziato").asString
-            } catch (e:Exception){
-                "null"
-            }
-
-            return JuniorUserOld.JuniorDip(id, dipName, badge, assunto, licenziato)
-        }
-
         /**
          * Ritorna la schermata che va aperta quando deve essere ripristinata la grafica, se la schermata è la Main non fa altro che ricaricare lo user in memoria (JuniorUser)
          * */
@@ -359,14 +332,14 @@ class JuniorApplication : Application() {
             }
             else{
                 //Se c'è un id allora un utente è già registrato, e possiamo entrare con la chiave
-                myJuniorUser.value = JuniorUserOld(userId)
+                JuniorUser.getUserFromDb(userId)
                 //login()
                 return "MAIN"
             }
         }
 
         fun getDirFiles(activity: Activity?): String{
-            val dir = activity?.filesDir?.absolutePath  + "/" + JuniorApplication.myJuniorUser.value?.name
+            val dir = activity?.filesDir?.absolutePath  + "/" + JuniorUser.name
             val file = File(dir)
             if(!file.exists()){
                 file.mkdirs()

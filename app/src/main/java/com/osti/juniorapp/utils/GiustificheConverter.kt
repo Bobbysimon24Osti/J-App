@@ -151,7 +151,7 @@ object GiustificheConverter {
         abbreviazioni = getAllAbbreviativi()
 
         for ((index, item) in nomi.withIndex()){
-            if(item != null && index != nomi.size){
+            if(item != null && index < nomi.size){
                 res.add(item + " - " + abbreviazioni[index])
             }
         }

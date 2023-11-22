@@ -6,6 +6,7 @@ import com.google.gson.JsonElement
 import com.osti.juniorapp.BuildConfig
 import com.osti.juniorapp.application.ActivationController
 import com.osti.juniorapp.application.JuniorApplication
+import com.osti.juniorapp.application.JuniorUser
 import com.osti.juniorapp.db.ParamManager
 import org.json.JSONArray
 import retrofit2.Call
@@ -24,8 +25,8 @@ class NetworkRichieste(val api:ApiCliente?) {
             if(guid!= null && db != null){
                 val call = api.setRichiesta(
                     db,
-                    JuniorApplication.myJuniorUser.value!!.getServerId() ?: "null",
-                    JuniorApplication.myJuniorUser.value!!.getserverKey() ?: "null",
+                    JuniorUser.serverIdUser,
+                    JuniorUser.key,
                     guid,
                     codice ?: "null",
                     BuildConfig.VERSION_NAME,

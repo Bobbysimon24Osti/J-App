@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.cardview.widget.CardView
@@ -15,15 +16,20 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.osti.juniorapp.R
+import com.osti.juniorapp.application.ActivationController
 import com.osti.juniorapp.application.JuniorApplication
-import com.osti.juniorapp.application.JuniorUserOld
+import com.osti.juniorapp.application.JuniorUser
 import com.osti.juniorapp.db.tables.GiustificheRecord
 import com.osti.juniorapp.network.NetworkController
 import com.osti.juniorapp.network.NetworkRichieste
+import com.osti.juniorapp.thread.RiceviDatiThread
 import com.osti.juniorapp.utils.GiustificheConverter
+import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.async
+import java.beans.PropertyChangeListener
 import kotlin.Int
 
 
@@ -35,8 +41,9 @@ class GestisciRichiesteFragment : Fragment() {
     lateinit var progressBar: ProgressBar
 
     lateinit var recyclerView: RecyclerView
-    lateinit var buttonApprova: Button
-    lateinit var buttonNega: Button
+    lateinit var refreshView: SwipeRefreshLayout
+    lateinit var buttonApprova: CardView
+    lateinit var buttonNega: CardView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -55,16 +62,63 @@ class GestisciRichiesteFragment : Fragment() {
         progressBar = v.findViewById(R.id.progressBar_richieste)
 
         recyclerView = v.findViewById(R.id.recycler_richiesteManager)
-        buttonApprova = v.findViewById(R.id.button_approvaGiust)
-        buttonNega = v.findViewById(R.id.button_negaGiust)
+
+        refreshView = v.findViewById(R.id.swipeRefresh_listaRichieste)
+        buttonApprova = v.findViewById(R.id.cardView_approvaRichiesta)
+        buttonNega = v.findViewById(R.id.cardView_negaRichiesta)
 
         buttonApprova.setOnClickListener(this::approvaSelected)
         buttonNega.setOnClickListener(this::negaSelected)
 
-        val use = JuniorApplication.myJuniorUser.value
+        refreshView.setOnRefreshListener(this::tryGiustUpdate)
 
-        if(use!=null){
-            listenToGiust(use)
+        if(JuniorUser.userLogged){
+            listenToGiust()
+        }
+    }
+
+    private fun tryGiustUpdate(){
+        refreshView.isEnabled = false
+        if(ActivationController.isActivated()){
+            RiceviDatiThread.observeScaricoGiust= downloadObserver
+            JuniorApplication.riceviDati()
+        }
+        else{
+            showErrorUpdate()
+        }
+    }
+
+    private val downloadObserver = PropertyChangeListener{
+        if(it.newValue != null && it.newValue is Boolean && it.newValue == true){
+            refreshView.isRefreshing = false
+            showSuccessToast()
+        }
+        else{
+            showErrorUpdate()
+        }
+        enableRefreshing()
+    }
+
+    private fun showErrorUpdate(){
+        refreshView.isRefreshing = false
+        enableRefreshing()
+        activity?.runOnUiThread{
+            AlertDialog.Builder(requireContext())
+                .setTitle("Errore")
+                .setMessage("Errore in fase di aggiornamento richieste dal server \n Verificare di essere connessi con il server di Juniorweb")
+                .setPositiveButton("Ok", null)
+                .show()
+        }
+    }
+
+    private fun enableRefreshing(){
+        refreshView.isEnabled = true
+    }
+
+    private fun showSuccessToast(){
+        enableRefreshing()
+        activity?.runOnUiThread{
+            Toasty.success(requireContext(), "Richieste aggiornate con successo").show()
         }
     }
 
@@ -75,12 +129,23 @@ class GestisciRichiesteFragment : Fragment() {
     }
 
     private fun approvaSelected(v:View){
+        val result = if(JuniorUser.type == "livello1"){
+            "ok_livello1"
+        }
+        else{
+            "approvato"
+        }
         val net = NetworkRichieste(NetworkController.apiCliente)
         for(item in (recyclerView.adapter as ApprovaNegaGiustAdapter).selectedItems){
-            JuniorApplication.myDatabaseController.setGiustApprovato(item)
+            if(result == "apporvato"){
+                JuniorApplication.myDatabaseController.setGiustApprovato(item)
+            }
+            else{
+                JuniorApplication.myDatabaseController.setGiustApprovatoLiv1(item)
+            }
         }
         progressBar.visibility = View.VISIBLE
-        net.setRichiesta("approvato", (recyclerView.adapter as ApprovaNegaGiustAdapter).selectedItems){
+        net.setRichiesta(result, (recyclerView.adapter as ApprovaNegaGiustAdapter).selectedItems){
             if(it.oldValue == "ok"){
                 AlertDialog.Builder(requireContext())
                     .setTitle("Completata")
@@ -126,15 +191,29 @@ class GestisciRichiesteFragment : Fragment() {
         svuotaListaSelected()
     }
 
-    fun listenToGiust(user: JuniorUserOld){
+    fun listenToGiust(){
         MainScope().async {
-            JuniorApplication.myDatabaseController.getGiustFlowNoMieDaGestire(user.dipentende!!.serverId).collect {
+            JuniorApplication.myDatabaseController.getGiustFlowNoMieDaGestire(JuniorUser.JuniorDipendente.serverId).collect {
                 var list = ArrayList<GiustificheRecord>()
                 if (it is List<*>) {
                     for(item in it){
-                       if(item?.richiesto == "richiesto") {
-                           list.add(item)
-                       }
+                        when (JuniorUser.livelloManager){
+                            "livello2" ->{
+                                if(item?.richiesto == "ok_livello1") {
+                                    list.add(item)
+                                }
+                            }
+                            "livello1" ->{
+                                if(item?.richiesto == "richiesto") {
+                                    list.add(item)
+                                }
+                            }
+                            else ->{
+                                if(item != null && item.richiesto != "approvato" && item.richiesto != "negato") {
+                                    list.add(item)
+                                }
+                            }
+                        }
                     }
                     adapt(list)
                 }
@@ -151,6 +230,7 @@ class GestisciRichiesteFragment : Fragment() {
 
     class RecyclerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val contraint : ConstraintLayout
+        val imageViewStatus: ImageView
         val textViewNomeDip : TextView
         val textViewNomeGiust : TextView
         val textViewAbbreviazioneGiust : TextView
@@ -159,11 +239,14 @@ class GestisciRichiesteFragment : Fragment() {
 
         init {
             contraint = itemView.findViewById(R.id.constraintLayout_approvaNega)
+            imageViewStatus = itemView.findViewById(R.id.imageView_statusRichiesta)
             textViewNomeDip = itemView.findViewById(R.id.textView_nomeDip)
             textViewNomeGiust = itemView.findViewById(R.id.textView_nomeGiust)
             textViewAbbreviazioneGiust = itemView.findViewById(R.id.textView_abbreviazioneGiust)
             textViewGiustDal = itemView.findViewById(R.id.textView_giustDal)
             textViewGiustAl = itemView.findViewById(R.id.textView_giustAl)
+
+            imageViewStatus.visibility = View.GONE
         }
     }
 
@@ -191,9 +274,12 @@ class GestisciRichiesteFragment : Fragment() {
                     holder.contraint.background = ResourcesCompat.getDrawable(resources, R.drawable.borders_layout, null)
                 }
                 holder.contraint.setOnLongClickListener {
-                    it.background = ResourcesCompat.getDrawable(resources, R.color.bluosti_light, null)
-                    selectedItems.add(list[position]?.giu_id ?:-1)
-                    updateSelect()
+                    if(selectedItems.isEmpty()) {
+                        it.background =
+                            ResourcesCompat.getDrawable(resources, R.color.bluosti_light, null)
+                        selectedItems.add(list[position]?.giu_id ?: -1)
+                        updateSelect()
+                    }
                     return@setOnLongClickListener true
                 }
                 holder.contraint.setOnClickListener{

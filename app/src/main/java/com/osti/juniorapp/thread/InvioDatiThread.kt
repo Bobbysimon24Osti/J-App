@@ -35,11 +35,16 @@ class InvioDatiThread(dipId:Long) : Thread() {
     }
 
     var timbrScope : Job? = null
+    companion object {
+        var lastSendId: Int = -1
+    }
+
     private fun startSendingTimbr(){
         isTimbrStarted = true
         timbrScope = CoroutineScope(Dispatchers.IO).launch {
             timbrFlow.collect{
-                if(it is TimbrTable && !it.onServer){
+                if(it is TimbrTable && !it.onServer && it.id != lastSendId){
+                    InvioDatiThread.lastSendId = it.id
                     NetworkController.sendTimbr(
                         it
                     )

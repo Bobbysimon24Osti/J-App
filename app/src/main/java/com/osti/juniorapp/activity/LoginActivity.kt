@@ -14,7 +14,7 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.gson.JsonElement
 import com.osti.juniorapp.R
 import com.osti.juniorapp.application.JuniorApplication
-import com.osti.juniorapp.application.JuniorUserOld
+import com.osti.juniorapp.application.JuniorUser
 import com.osti.juniorapp.network.NetworkController
 import com.osti.juniorapp.db.ParamManager
 import com.osti.juniorapp.thread.RiceviDatiThread
@@ -76,10 +76,12 @@ class LoginActivity : AppCompatActivity() {
         progressBar.visibility = View.GONE
         val response = p0.oldValue
         if(response is Response<*> && response.errorBody()== null && (response as Response<JsonElement>).errorBody()?.byteString() == null){//Veridica che la risposta sia arrivata correttamente e che non ci siano stati errori
+            JuniorApplication.myDatabaseController.clearGiust()
             val key = response.headers()["x-user-key"]!!
+            JuniorUser.key = key
             val serverid = response.headers()["x-user-id"]!!
+            JuniorUser.serverIdUser = serverid
             JuniorApplication.myKeystore.setKey(key, this)
-            JuniorApplication.myJuniorUser.value = JuniorUserOld(serverid, key, "null", "null", "null", "null", "null", "null", "null", null)
 
             log.insertLog("Primo Login eseguito con successo")
 
