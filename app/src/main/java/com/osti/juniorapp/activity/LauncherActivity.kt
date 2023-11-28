@@ -10,6 +10,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 var nuoveNotifiche = false
 
@@ -26,11 +28,11 @@ class LauncherActivity : AppCompatActivity() {
         application.onCreate()
     }
 
-    fun tstst() {
-        CoroutineScope(Dispatchers.Default).async{
-            delay(5000)
+    fun tstst() = runBlocking{
+
+            delay(10000)
             agaga()
-        }
+
     }
 
     fun agaga() = runOnUiThread{

@@ -1,5 +1,6 @@
 package com.osti.juniorapp.fragment
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,8 +9,10 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.osti.juniorapp.R
+import com.osti.juniorapp.activity.LoginActivity
+import com.osti.juniorapp.application.DipendentiRepository
 import com.osti.juniorapp.application.JuniorApplication
-import com.osti.juniorapp.application.JuniorUser
+import com.osti.juniorapp.application.UserRepository
 import com.osti.juniorapp.db.ParamManager
 import com.osti.juniorapp.db.tables.LogTable
 
@@ -72,15 +75,17 @@ class AccountFragment : Fragment() {
 
     private fun refreshData(){
         activity?.runOnUiThread {
-            if(JuniorUser.JuniorDipendente.serverId != -1L){
+            val user = UserRepository(ParamManager.getLastUserId()).getUser()
+            val dipendente = DipendentiRepository(user?.idDipendente ?: -1).getDipendente()
+            if(user!= null && dipendente!= null && dipendente.serverId != -1L){
                 val param = ParamManager
-                textViewUserId.text = "Id sul server: " + JuniorUser.serverIdUser
-                textViewUserType.text = "Tipo accesso: " + JuniorUser.type
-                textViewUserName.text = "Nome: " + JuniorUser.name
+                textViewUserId.text = "Id sul server: " + user.server_id
+                textViewUserType.text = "Tipo accesso: " + user.type
+                textViewUserName.text = "Nome: " + user.name
 
-                textViewDipId.text = "Id sul server: " + JuniorUser.JuniorDipendente.serverId.toString()
-                textViewDipName.text = "Nome: " + JuniorUser.JuniorDipendente.nome
-                textViewDipBadge.text = "Badge: " + JuniorUser.JuniorDipendente.badge.toString()
+                textViewDipId.text = "Id sul server: " + dipendente.serverId.toString()
+                textViewDipName.text = "Nome: " + dipendente.nome
+                textViewDipBadge.text = "Badge: " + dipendente.badge.toString()
 
                 textViewIdApp.text = "Id App: " + param.getIdApp()
                 textViewCodiceAtt.text = "Codice attivazione app: " + param.getCodice()
@@ -92,7 +97,10 @@ class AccountFragment : Fragment() {
 
     private fun onClickEsci(v:View){
         //startActivity(Intent(super.getContext(), LoginActivity::class.java))
-        JuniorApplication.myDatabaseController.setLastUserId(null)
+        ParamManager.setLastUserId(null)
+        UserRepository.logged = false
+
+        //startActivity(Intent(requireContext(), LoginActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
     }
 
 

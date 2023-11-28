@@ -5,7 +5,6 @@ import com.google.gson.JsonElement
 import com.osti.juniorapp.BuildConfig
 import com.osti.juniorapp.application.ActivationController
 import com.osti.juniorapp.application.JuniorApplication
-import com.osti.juniorapp.application.JuniorUser
 import com.osti.juniorapp.db.ParamManager
 import retrofit2.Call
 import retrofit2.Callback
@@ -20,12 +19,13 @@ class NetworkAggiornaApp(val api:ApiOsti?) {
             val guid = ParamManager.getGuid()
             val db = ParamManager.getArchivio()
             val codice = ParamManager.getCodice()
-            if(guid!= null && db != null){
+            val serverid = ParamManager.getLastUserId()
+            if(guid!= null && db != null && serverid != null){
                 val tmp = VersioneRequest(versioneJWeb)
                 val call = api.getUltimaVersione(
                     db,
-                    JuniorUser.serverIdUser,
-                    JuniorUser.key,
+                    serverid,
+                    JuniorApplication.myKeystore.activeKey ?: "null",
                     guid,
                     codice ?: "null",
                     BuildConfig.VERSION_NAME,

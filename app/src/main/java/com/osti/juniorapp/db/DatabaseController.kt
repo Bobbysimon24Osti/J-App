@@ -1,9 +1,12 @@
 package com.osti.juniorapp.db
 
 import android.content.Context
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
-import com.osti.juniorapp.application.JuniorUser
+import com.osti.juniorapp.application.JuniorApplication
+import com.osti.juniorapp.application.UserRepository
 import com.osti.juniorapp.db.resolvers.JuniorNotificheResolver
 import com.osti.juniorapp.db.tables.AngelTable
 import com.osti.juniorapp.db.tables.DipendentiTable
@@ -50,7 +53,7 @@ class DatabaseController (context: Context) {
         }
     }
 
-    private suspend fun getOfflineGiust(): List<GiustificheTable> {
+    private fun getOfflineGiust(): List<GiustificheTable> {
         return myDB.mGiustificheDao().getAllGiustifiche()
     }
 
@@ -120,7 +123,8 @@ class DatabaseController (context: Context) {
     }
     fun setLastUserId(id:String?) {
         if(id == null){
-            JuniorUser.userLogged = false
+            UserRepository.logged = false
+            JuniorApplication.unSubscribeToFirebaseNotification()
         }
         CoroutineScope(Dispatchers.IO).async{
             myDB.mParametriDao().setLastUserId(id)
@@ -131,7 +135,6 @@ class DatabaseController (context: Context) {
             val userId = myDB.mParametriDao().getLastUserId()
             observer.propertyChange(PropertyChangeEvent("DATABASE CONTROLLER", "GET LAS USER ID", userId, userId))
         }
-
     }
     fun setTipoApp(tipo:String?){
         CoroutineScope(Dispatchers.IO).async{
@@ -167,10 +170,27 @@ class DatabaseController (context: Context) {
 
     }
 
-    fun creaUser(user:UserTable) {
+    fun getLiveUser(user_id:String?): LiveData<UserTable?>? {
+            return myDB.mUsersDao().getLiveUser(user_id)
+    }
+
+    fun creaUseroAggiorna(user:UserTable) {
         CoroutineScope(Dispatchers.IO).async{
-            myDB.mUsersDao().creaUser(user)
-            myDB.mParametriDao().setLastUserId(user.server_id)
+            try{
+                val i = myDB.mUsersDao().getUser(user.server_id)
+                if (i != null){
+                    //UTENTE GIA PRESENTE IN DB, VIENE AGGIORNATO
+                    myDB.mUsersDao().setUser(user.name, user.type, user.perm_timbrature, user.perm_workflow, user.badge, user.idDipendente, user.server_id, user.nascondi_timbrature, user.livello_manager)
+                }
+                else{
+                    //UTENTE NUOVO, VIENE CREATO
+                    myDB.mUsersDao().creaUser(user)
+                }
+            }
+            catch (e:Exception){
+                val i = e
+            }
+            ParamManager.setLastUserId(user.server_id)
         }
     }
     fun updateUser(user:UserTable) {
@@ -240,6 +260,10 @@ class DatabaseController (context: Context) {
             observer.propertyChange(PropertyChangeEvent("DATABASE CONTROLLER", "GET LAST STAMP DIPENDENTE", dip, dip))
         }
     }
+    fun getLiveDipendente(serverId:Long?) : LiveData<DipendentiTable?> {
+            return myDB.mDipDao().getLiveDip(serverId ?:-900)
+    }
+
 
     /*
     CONFIGURAZIONE JUNIOR

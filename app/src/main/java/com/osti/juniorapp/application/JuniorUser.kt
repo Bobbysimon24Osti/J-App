@@ -3,11 +3,12 @@ package com.osti.juniorapp.application
 import androidx.lifecycle.MutableLiveData
 import com.osti.juniorapp.db.tables.DipendentiTable
 import com.osti.juniorapp.db.tables.UserTable
+import com.osti.juniorapp.utils.LogController
 import okhttp3.internal.notify
 import java.beans.PropertyChangeEvent
 import java.beans.PropertyChangeListener
 
-object JuniorUser {
+/*object JuniorUser {
 
 
     var userLogged = false
@@ -33,7 +34,7 @@ object JuniorUser {
 
     fun saveUserOnDb(){
         val tmpUserTable = UserTable(serverIdUser ?:"-1", name ?:"null", type?:"null", permTimbrature?:"null", permWorkFlow?:"null", permCartellino?:"null", JuniorDipendente.badge, JuniorDipendente.serverId, livelloManager?:"null")
-        JuniorApplication.myDatabaseController.creaUser(tmpUserTable)
+        JuniorApplication.myDatabaseController.creaUseroAggiorna(tmpUserTable)
     }
 
     fun saveDipOnDb(){
@@ -44,6 +45,8 @@ object JuniorUser {
     fun saveAllOnDb(){
         saveUserOnDb()
         saveDipOnDb()
+        val log = LogController(LogController.LOGIN)
+        log.insertLog("UPDATED = TRUE")
         updated.value = true
     }
 
@@ -124,4 +127,4 @@ object JuniorUser {
         return false
     }
 
-}
+}*/

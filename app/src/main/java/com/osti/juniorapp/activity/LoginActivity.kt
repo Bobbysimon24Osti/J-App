@@ -14,9 +14,10 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.gson.JsonElement
 import com.osti.juniorapp.R
 import com.osti.juniorapp.application.JuniorApplication
-import com.osti.juniorapp.application.JuniorUser
+import com.osti.juniorapp.application.UserRepository
 import com.osti.juniorapp.network.NetworkController
 import com.osti.juniorapp.db.ParamManager
+import com.osti.juniorapp.key.MyKeystore
 import com.osti.juniorapp.thread.RiceviDatiThread
 import com.osti.juniorapp.utils.LogController
 import org.json.JSONObject
@@ -39,6 +40,7 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
         runOnUiThread{
+            UserRepository.ignore = true
             init()
             if (intent.extras?.getString("ERROR") == "ERROR-PARAM"){
                 AlertDialog.Builder(this)
@@ -78,9 +80,11 @@ class LoginActivity : AppCompatActivity() {
         if(response is Response<*> && response.errorBody()== null && (response as Response<JsonElement>).errorBody()?.byteString() == null){//Veridica che la risposta sia arrivata correttamente e che non ci siano stati errori
             JuniorApplication.myDatabaseController.clearGiust()
             val key = response.headers()["x-user-key"]!!
-            JuniorUser.key = key
+            UserRepository.key = key
             val serverid = response.headers()["x-user-id"]!!
-            JuniorUser.serverIdUser = serverid
+            //Se non esiste creo user altrimenti niente
+            UserRepository.saveUserDataFromServer(serverid)
+
             JuniorApplication.myKeystore.setKey(key, this)
 
             log.insertLog("Primo Login eseguito con successo")

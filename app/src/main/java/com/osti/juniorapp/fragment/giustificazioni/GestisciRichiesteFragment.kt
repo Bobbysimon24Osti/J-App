@@ -19,8 +19,10 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.osti.juniorapp.R
 import com.osti.juniorapp.application.ActivationController
+import com.osti.juniorapp.application.DipendentiRepository
 import com.osti.juniorapp.application.JuniorApplication
-import com.osti.juniorapp.application.JuniorUser
+import com.osti.juniorapp.application.UserRepository
+import com.osti.juniorapp.db.ParamManager
 import com.osti.juniorapp.db.tables.GiustificheRecord
 import com.osti.juniorapp.network.NetworkController
 import com.osti.juniorapp.network.NetworkRichieste
@@ -72,7 +74,7 @@ class GestisciRichiesteFragment : Fragment() {
 
         refreshView.setOnRefreshListener(this::tryGiustUpdate)
 
-        if(JuniorUser.userLogged){
+        if(UserRepository.logged){
             listenToGiust()
         }
     }
@@ -129,7 +131,8 @@ class GestisciRichiesteFragment : Fragment() {
     }
 
     private fun approvaSelected(v:View){
-        val result = if(JuniorUser.type == "livello1"){
+        val user = UserRepository(ParamManager.getLastUserId()).getUser()
+        val result = if(user?.type == "livello1"){
             "ok_livello1"
         }
         else{
@@ -193,11 +196,14 @@ class GestisciRichiesteFragment : Fragment() {
 
     fun listenToGiust(){
         MainScope().async {
-            JuniorApplication.myDatabaseController.getGiustFlowNoMieDaGestire(JuniorUser.JuniorDipendente.serverId).collect {
+            val user = UserRepository(ParamManager.getLastUserId()).getUser()
+            val dip = DipendentiRepository(user?.idDipendente ?: -1).getDipendente()
+            JuniorApplication.myDatabaseController.getGiustFlowNoMieDaGestire(dip?.serverId ?:-1).collect {
                 var list = ArrayList<GiustificheRecord>()
                 if (it is List<*>) {
+                    val intUser = UserRepository(ParamManager.getLastUserId()).getUser()
                     for(item in it){
-                        when (JuniorUser.livelloManager){
+                        when (intUser?.livello_manager){
                             "livello2" ->{
                                 if(item?.richiesto == "ok_livello1") {
                                     list.add(item)

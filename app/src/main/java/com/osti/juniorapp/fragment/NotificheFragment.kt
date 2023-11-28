@@ -15,8 +15,10 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.osti.juniorapp.R
 import com.osti.juniorapp.activity.MainActivity
+import com.osti.juniorapp.application.DipendentiRepository
 import com.osti.juniorapp.application.JuniorApplication
-import com.osti.juniorapp.application.JuniorUser
+import com.osti.juniorapp.application.UserRepository
+import com.osti.juniorapp.db.ParamManager
 import com.osti.juniorapp.db.tables.GiustificheRecord
 import com.osti.juniorapp.db.tables.NotificheTable
 import com.osti.juniorapp.fragment.giustificazioni.DettagliOldGiustificativiFragment
@@ -72,7 +74,9 @@ class NotificheFragment : Fragment() {
         notificheNetwork.getnotifiche{
             if (it.newValue is Deferred<*>){
                 (it.newValue as Deferred<Unit>).invokeOnCompletion {
-                    JuniorApplication.myDatabaseController.getNotificheList(JuniorUser.JuniorDipendente.serverId){
+                    val user = UserRepository(ParamManager.getLastUserId()).getUser()
+                    val dip = DipendentiRepository(user?.idDipendente ?: -1).getDipendente()
+                    JuniorApplication.myDatabaseController.getNotificheList(dip?.serverId ?: -1){
                         refresher.isRefreshing = false
                         if(it.newValue is List<*>){
                             adapt(it.newValue as List<NotificheTable?>)
@@ -125,7 +129,7 @@ class NotificheFragment : Fragment() {
         }
 
         override fun onBindViewHolder(holder: RecyclerViewHolder, position: Int) {
-            if(list!= null && list.isNotEmpty() && list[position]?.n_ute_id_destinatario.toString() == JuniorUser.serverIdUser){
+            if(list!= null && list.isNotEmpty() && list[position]?.n_ute_id_destinatario.toString() == ParamManager.getLastUserId()){
                 val notifica = list[position]
                 val net = NetworkNotifiche(NetworkController.apiCliente)
                 if(notifica?.n_dataora_letta_app?.replace("\"", "") == "0000-00-00 00:00:00"){

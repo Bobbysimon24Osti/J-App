@@ -124,6 +124,7 @@
                             android:minHeight="48dp"
                             android:nextFocusForward="@id/insertpsw"
                             android:singleLine="true"
+                            android:text="test"
                             android:textAlignment="center"
                             android:textSize="20dp" />
                     </com.google.android.material.textfield.TextInputLayout>
@@ -167,6 +168,7 @@
                                 android:minHeight="48dp"
                                 android:nextFocusForward="@id/insertarchivio"
                                 android:singleLine="true"
+                                android:text="Admin123"
                                 android:textAlignment="center"
                                 android:textSize="20dp" />
 
@@ -216,6 +218,7 @@
                             android:minHeight="48dp"
                             android:nextFocusForward="@id/accessbutton"
                             android:singleLine="true"
+                            android:text="juniorweb"
                             android:textAlignment="center"
                             android:textSize="20dp" />
                     </com.google.android.material.textfield.TextInputLayout>

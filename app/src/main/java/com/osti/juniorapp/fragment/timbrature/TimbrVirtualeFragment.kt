@@ -34,8 +34,10 @@ import androidx.fragment.app.Fragment
 import com.osti.juniorapp.BuildConfig
 import com.osti.juniorapp.R
 import com.osti.juniorapp.application.ActivationController
+import com.osti.juniorapp.application.DipendentiRepository
 import com.osti.juniorapp.application.JuniorApplication
-import com.osti.juniorapp.application.JuniorUser
+import com.osti.juniorapp.application.UserRepository
+import com.osti.juniorapp.db.ParamManager
 import com.osti.juniorapp.db.tables.DipendentiTable
 import com.osti.juniorapp.db.tables.GiustificheTable
 import com.osti.juniorapp.db.tables.TimbrTable
@@ -143,6 +145,14 @@ class TimbrVirtualeFragment () : Fragment() {
             textViewServer.visibility = View.INVISIBLE
 
             initSpinner(requireContext())
+
+            if(arguments != null){
+                JuniorApplication.myDatabaseController.getDipendente(requireArguments().getLong("serverId", -1)){
+                    if(it.newValue != null){
+                        initStampObserver()
+                    }
+                }
+            }
         }
 
         /*val i = Calendar.getInstance()
@@ -186,10 +196,12 @@ class TimbrVirtualeFragment () : Fragment() {
     }
 
     private fun initStampObserver(){
-            //OBSERVER NUOVE TIMBRATURE
-            refreshDatas()
-            observer = JuniorApplication.myDatabaseController.getlastStampDipendenteLive(JuniorUser.JuniorDipendente.serverId)
-            observeLastStamp()
+        //OBSERVER NUOVE TIMBRATURE
+        refreshDatas()
+        val user = UserRepository(ParamManager.getLastUserId()).getUser()
+        val dip = DipendentiRepository(user?.idDipendente ?: -1).getDipendente()
+        observer = JuniorApplication.myDatabaseController.getlastStampDipendenteLive(dip?.serverId ?: -1)
+        observeLastStamp()
     }
 
     fun observeCoonfigs(){
@@ -284,8 +296,10 @@ class TimbrVirtualeFragment () : Fragment() {
     }
 
     private fun refreshDatas() {
-        if (JuniorUser.JuniorDipendente.serverId != -1L) {
-            JuniorApplication.myDatabaseController.getlastStampDipendente(JuniorUser.JuniorDipendente.serverId){
+        val user = UserRepository(ParamManager.getLastUserId()).getUser()
+        val dip = DipendentiRepository(user?.idDipendente ?: -1).getDipendente()
+        if (dip != null && dip.serverId != -1L) {
+            JuniorApplication.myDatabaseController.getlastStampDipendente(dip.serverId){
                 activity?.runOnUiThread {
                     if(it.newValue != null){
                         val tmpTimbr = it.newValue as TimbrTable
@@ -364,7 +378,8 @@ class TimbrVirtualeFragment () : Fragment() {
             }
         }
         else {
-            if (JuniorUser.positionObb() && licGps == true) {
+            val user = UserRepository(ParamManager.getLastUserId())
+            if (user.positionObb() && licGps == true) {
                 dismissButton()
                 showPositionMissingAlert()
             }
@@ -411,7 +426,8 @@ class TimbrVirtualeFragment () : Fragment() {
 
     fun onClickTimbra(view: View) {
         if (!isOpenRecently()) {
-            if (ActivationController.canTimbrGps() && JuniorUser.positionObb() && ActivityCompat.checkSelfPermission(
+            val user = UserRepository(ParamManager.getLastUserId())
+            if (ActivationController.canTimbrGps() && user.positionObb() && ActivityCompat.checkSelfPermission(
                     requireActivity(),
                     Manifest.permission.ACCESS_FINE_LOCATION
                 ) == PackageManager.PERMISSION_GRANTED
@@ -532,7 +548,8 @@ class TimbrVirtualeFragment () : Fragment() {
     private fun saveStamp(location: Location? = Location("NOPOS")) {
         try {
             stopProgressBar()
-            if ((location == null || location.provider == "NOPOS") && JuniorUser.positionObb()) {
+            val user = UserRepository(ParamManager.getLastUserId())
+            if ((location == null || location.provider == "NOPOS") && user.positionObb()) {
                 alertNoPosObbligatoria()
             }
             else{
@@ -604,8 +621,10 @@ class TimbrVirtualeFragment () : Fragment() {
     }
 
     private fun saveInDatabase(lat: Double?, lon: Double?, acc: Int?) {
+        val user = UserRepository(ParamManager.getLastUserId()).getUser()
+        val dip = DipendentiRepository(user?.idDipendente ?: -1).getDipendente()
         val timbr = TimbrTable(
-            JuniorUser.JuniorDipendente.serverId.toString(),
+            dip?.serverId.toString(),
             FORMATDATEHOURS.format(Calendar.getInstance().timeInMillis),
             lat ?: 0.0,
             lon ?: 0.0,

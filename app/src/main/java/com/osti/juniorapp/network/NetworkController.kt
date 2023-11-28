@@ -7,12 +7,12 @@ import com.google.gson.JsonObject
 import com.osti.juniorapp.BuildConfig
 import com.osti.juniorapp.application.ActivationController
 import com.osti.juniorapp.application.JuniorApplication
-import com.osti.juniorapp.application.JuniorUser
 import com.osti.juniorapp.application.StatusController
 import com.osti.juniorapp.application.StatusController.setOfflineCLI
 import com.osti.juniorapp.application.StatusController.setOfflineOSTI
 import com.osti.juniorapp.application.StatusController.setOlineCLI
 import com.osti.juniorapp.application.StatusController.setOlineOSTI
+import com.osti.juniorapp.application.UserRepository
 import com.osti.juniorapp.db.ParamManager
 import com.osti.juniorapp.db.tables.GiustificheRecord
 import com.osti.juniorapp.db.tables.NomiFileTable
@@ -182,7 +182,7 @@ object NetworkController {
                     //NON AUTORIZZATO, IL SERVER RIFIUTA LA CONNESSIONE PER PROBLEMI DI AUTORIZZAZIONE; DI SOLITO QUANDO SI CAMBIA URL E L'UTENTE E LOGGATO SUL VECCHIO SERVER
                     log.insertLog("Errore in fase di richiesta parametri user (codice err. 201)")
                     observer.propertyChange(PropertyChangeEvent("NetworkController", "ERR-AUTH",  response, result))
-                    JuniorApplication.myDatabaseController.setLastUserId(null)
+                    ParamManager.setLastUserId(null)
                     StatusController.setOlineCLI()
                 }
                 else{
@@ -270,12 +270,13 @@ object NetworkController {
                 val guid = ParamManager.getGuid()
                 val db = ParamManager.getArchivio()
                 val codice = ParamManager.getCodice()
-                if(guid!= null && db != null){
+                val serverId = ParamManager.getLastUserId()
+                if(guid!= null && db != null && serverId != null){
                     val tmp = TimbrRequest(timbr, guid, db)
                     val call = apiCliente?.sendTImbrature(
                         db,
-                        JuniorUser.serverIdUser,
-                        JuniorUser.key,
+                        serverId,
+                        JuniorApplication.myKeystore.activeKey ?: "null",
                         guid,
                         codice ?: "null",
                         BuildConfig.VERSION_NAME,
@@ -375,12 +376,13 @@ object NetworkController {
             val guid = ParamManager.getGuid()
             val db = ParamManager.getArchivio()
             val codice = ParamManager.getCodice()
-            if(guid!= null && db != null){
+            val serverId = ParamManager.getLastUserId()
+            if(guid!= null && db != null && serverId != null){
                 val tmp = GiustRequest(giustifica)
                 val call = apiCliente?.sendGiustifiche(
                     db,
-                    JuniorUser.serverIdUser,
-                    JuniorUser.key,
+                    serverId,
+                    JuniorApplication.myKeystore.activeKey ?: "null",
                     guid,
                     codice ?: "null",
                     BuildConfig.VERSION_NAME,
@@ -422,11 +424,12 @@ object NetworkController {
             val guid = ParamManager.getGuid()
             val db = ParamManager.getArchivio()
             val codice = ParamManager.getCodice()
-            if(guid!= null && db != null){
+            val serverId = ParamManager.getLastUserId()
+            if(guid!= null && db != null && serverId != null){
                 val call = apiCliente?.getGiustifiche(
                     db,
-                    JuniorUser.serverIdUser,
-                    JuniorUser.key,
+                    serverId,
+                    JuniorApplication.myKeystore.activeKey ?: "null",
                     guid,
                     codice ?: "null",
                     BuildConfig.VERSION_NAME,
@@ -480,12 +483,13 @@ object NetworkController {
             val guid = ParamManager.getGuid()
             val db = ParamManager.getArchivio()
             val codice = ParamManager.getCodice()
-            if(guid!= null && db != null) {
+            val serverId = ParamManager.getLastUserId()
+            if(guid!= null && db != null && serverId != null){
                 val request = DeleteRequest(giust)
                 val call = apiCliente?.deleteGiustifica(
                     db,
-                    JuniorUser.serverIdUser,
-                    JuniorUser.key,
+                    serverId,
+                    JuniorApplication.myKeystore.activeKey ?: "null",
                     guid,
                     codice ?: "null",
                     BuildConfig.VERSION_NAME,
@@ -538,11 +542,12 @@ object NetworkController {
             val guid = ParamManager.getGuid()
             val db = ParamManager.getArchivio()
             val codice = ParamManager.getCodice()
-            if(guid!= null){
+            val serverId = ParamManager.getLastUserId()
+            if(guid!= null && serverId != null){
                 val call = apiCliente?.getFileNames(
                     db,
-                    JuniorUser.serverIdUser,
-                    JuniorUser.key,
+                    serverId,
+                    JuniorApplication.myKeystore.activeKey ?: "null",
                     guid,
                     codice ?: "null",
                     BuildConfig.VERSION_NAME,
@@ -576,11 +581,12 @@ object NetworkController {
             val db = ParamManager.getArchivio()
             val codice = ParamManager.getCodice()
             val request = FIleRequest(url)
-            if(guid!= null){
+            val serverId = ParamManager.getLastUserId()
+            if(guid!= null && serverId != null){
                 val call = apiCliente?.getFile(
                     db,
-                    JuniorUser.serverIdUser,
-                    JuniorUser.key,
+                    serverId,
+                    JuniorApplication.myKeystore.activeKey ?: "null",
                     guid,
                     codice ?: "null",
                     BuildConfig.VERSION_NAME,
@@ -599,11 +605,12 @@ object NetworkController {
             val db = ParamManager.getArchivio()
             val codice = ParamManager.getCodice()
             val request = CartellinoRequest(annoMese)
-            if(guid!= null){
+            val serverId = ParamManager.getLastUserId()
+            if(guid!= null && serverId != null){
                 val call = apiCliente?.getCartellino(
                     db,
-                    JuniorUser.serverIdUser,
-                    JuniorUser.key,
+                    serverId,
+                    JuniorApplication.myKeystore.activeKey ?: "null",
                     guid,
                     codice ?: "null",
                     BuildConfig.VERSION_NAME,
@@ -672,11 +679,12 @@ object NetworkController {
             val db = ParamManager.getArchivio()
             val codice = ParamManager.getCodice()
             val request = InviaRispostaFile(file)
-            if(guid!= null){
+            val serverId = ParamManager.getLastUserId()
+            if(guid!= null && serverId != null){
                 val call = apiCliente?.inviaRisposta(
                     db,
-                    JuniorUser.serverIdUser,
-                    JuniorUser.key,
+                    serverId,
+                    JuniorApplication.myKeystore.activeKey ?: "null",
                     guid,
                     codice ?: "null",
                     BuildConfig.VERSION_NAME,
@@ -766,16 +774,17 @@ object NetworkController {
 
     fun testServerCliente(observer:PropertyChangeListener) {
         istantiateapi()
-        if (apiCliente != null && JuniorUser.userLogged) {
+        if (apiCliente != null && UserRepository.logged) {
             val guid = ParamManager.getGuid()
             val db = ParamManager.getArchivio()
             val codice = ParamManager.getCodice()
-            if (guid != null && db != null) {
+            val serverId = ParamManager.getLastUserId()
+            if(guid!= null && db != null && serverId != null){
                 val tmp = ""
                 val call = apiCliente?.testServerCliente(
                     db,
-                    JuniorUser.serverIdUser,
-                    JuniorUser.key,
+                    serverId,
+                    JuniorApplication.myKeystore.activeKey ?: "null",
                     guid,
                     codice ?: "null",
                     BuildConfig.VERSION_NAME,

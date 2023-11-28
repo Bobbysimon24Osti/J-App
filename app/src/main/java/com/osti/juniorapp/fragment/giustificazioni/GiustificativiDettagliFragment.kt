@@ -26,8 +26,10 @@ import com.google.android.material.textfield.TextInputEditText
 import com.osti.juniorapp.R
 import com.osti.juniorapp.activity.MainActivity
 import com.osti.juniorapp.application.ActivationController
+import com.osti.juniorapp.application.DipendentiRepository
 import com.osti.juniorapp.application.JuniorApplication
-import com.osti.juniorapp.application.JuniorUser
+import com.osti.juniorapp.application.UserRepository
+import com.osti.juniorapp.db.ParamManager
 import com.osti.juniorapp.db.tables.GiustificheRecord
 import com.osti.juniorapp.db.tables.GiustificheTable
 import com.osti.juniorapp.utils.GiustificheConverter
@@ -545,36 +547,40 @@ class GiustificativiDettagliFragment : Fragment(){
                 }
 
                 try{
+                    val user = UserRepository(ParamManager.getLastUserId()).getUser()
+                    val dip = DipendentiRepository(user?.idDipendente ?: -1).getDipendente()
                     val time = FORMATDATEHOURS.format(Calendar.getInstance().timeInMillis)
-                    JuniorApplication.myDatabaseController.creaGiustificheRecord(
-                        GiustificheRecord(
-                            null,
-                            tmpGiust.id,
-                            JuniorUser.JuniorDipendente.serverId,
-                            dataInizio,
-                            dataFine,
-                            valore,
-                            "offline",
-                            editTextNote.text.toString(),
-                            null,
-                            JuniorUser.JuniorDipendente.nome,
-                            JuniorUser.JuniorDipendente.badge,
-                            GiustificheConverter.getCompleteName(tmpGiust) ?:"sconosciuto",
-                            GiustificheConverter.getType(tmpGiust) ?: "sconosciuto",
-                            GiustificheConverter.getOrevalore(tmpGiust) ?: "ore",
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            oraInizio,
-                            oraFine,
-                            time,
-                            null,
-                            checkBoxGiorniNonLavorativi.isChecked,
-                            tmpGiust.abbreviativo))
+                    if(dip != null){
+                        JuniorApplication.myDatabaseController.creaGiustificheRecord(
+                            GiustificheRecord(
+                                null,
+                                tmpGiust.id,
+                                dip.serverId,
+                                dataInizio,
+                                dataFine,
+                                valore,
+                                "offline",
+                                editTextNote.text.toString(),
+                                null,
+                                dip.nome,
+                                dip.badge,
+                                GiustificheConverter.getCompleteName(tmpGiust) ?:"sconosciuto",
+                                GiustificheConverter.getType(tmpGiust) ?: "sconosciuto",
+                                GiustificheConverter.getOrevalore(tmpGiust) ?: "ore",
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                oraInizio,
+                                oraFine,
+                                time,
+                                null,
+                                checkBoxGiorniNonLavorativi.isChecked,
+                                tmpGiust.abbreviativo))
+                    }
                 }
                 catch (e: Exception){
                     //Niente, serve solo per non rischiare un loop
@@ -611,14 +617,16 @@ class GiustificativiDettagliFragment : Fragment(){
                 return true
             }
         }
+        val user = UserRepository(ParamManager.getLastUserId()).getUser()
+        val dip = DipendentiRepository(user?.idDipendente ?: -1).getDipendente()
         if(
             editTextValore.text.isBlank() ||
                     !isDate(textViewStartDate.text.toString()) ||
                     !isDate(textViewEndDate.text.toString()) ||
                     (ActivationController.workFlowValoriObbligatori == "1" && (editTextStartTime.text.isBlank() || editTextEndtTime.text.isBlank())) ||
                     ((selectedGiust != null &&  GiustificheConverter.isNoteObb(selectedGiust!!)) && editTextNote.text?.isBlank() != false) ||
-                    JuniorUser.userLogged ||
-                    JuniorUser.JuniorDipendente.serverId == -1L
+                    UserRepository.logged ||
+                    dip?.serverId == -1L
         ){
             showMissingCampiAlert()
             return false

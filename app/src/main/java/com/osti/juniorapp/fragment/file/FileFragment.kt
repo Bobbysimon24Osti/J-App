@@ -307,7 +307,7 @@ class FileFragment : Fragment() {
                                 .show()
                         }
                         else{
-                            JuniorApplication.setLastFragment(FileFragment::class.simpleName, activity)
+                            JuniorApplication.setFileAsLastFragment(activity)
                             //JuniorApplication.setLastFragment(FileFragment::class.simpleName, activity.baseContext)
                             activity.startActivity(Intent(Intent.ACTION_VIEW)
                                 .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)

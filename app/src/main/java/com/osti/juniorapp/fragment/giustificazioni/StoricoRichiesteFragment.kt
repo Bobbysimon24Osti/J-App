@@ -19,8 +19,10 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.osti.juniorapp.R
 import com.osti.juniorapp.application.ActivationController
+import com.osti.juniorapp.application.DipendentiRepository
 import com.osti.juniorapp.application.JuniorApplication
-import com.osti.juniorapp.application.JuniorUser
+import com.osti.juniorapp.application.UserRepository
+import com.osti.juniorapp.db.ParamManager
 import com.osti.juniorapp.db.tables.GiustificheRecord
 import com.osti.juniorapp.thread.RiceviDatiThread
 import com.osti.juniorapp.utils.GiustificheConverter
@@ -64,10 +66,12 @@ class StoricoRichiesteFragment : Fragment() {
 
     fun listenToGiust(){
         MainScope().async {
-            JuniorApplication.myDatabaseController.getGiustFlowStorico(JuniorUser.JuniorDipendente.serverId).collect {
+            val mUser = UserRepository(ParamManager.getLastUserId()).getUser()
+            val dip = DipendentiRepository(mUser?.idDipendente ?: -1).getDipendente()
+            JuniorApplication.myDatabaseController.getGiustFlowStorico(dip?.serverId ?:-1).collect {
                 var list = ArrayList<GiustificheRecord>()
                 if (it is List<*>) {
-                    when (JuniorUser.livelloManager){
+                    when (mUser?.livello_manager ?: "null"){
                         "livello1" -> {
                             for(item in it){
                                 if(item != null && item.richiesto == "ok_livello1") {

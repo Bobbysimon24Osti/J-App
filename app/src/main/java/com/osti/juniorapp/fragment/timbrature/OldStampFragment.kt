@@ -18,8 +18,10 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.osti.juniorapp.R
+import com.osti.juniorapp.application.DipendentiRepository
 import com.osti.juniorapp.application.JuniorApplication
-import com.osti.juniorapp.application.JuniorUser
+import com.osti.juniorapp.application.UserRepository
+import com.osti.juniorapp.db.ParamManager
 import com.osti.juniorapp.db.tables.TimbrTable
 import com.osti.juniorapp.utils.Utils.FORMATDATEHOURS
 import com.osti.juniorapp.utils.Utils.NORMALFORMATDATEHOURS
@@ -46,10 +48,12 @@ class OldStampFragment : Fragment() {
 
     fun init(v:View){
         activity?.runOnUiThread{
-            if(JuniorUser.JuniorDipendente.serverId != -1L){
+            val user = UserRepository(ParamManager.getLastUserId()).getUser()
+            val dip = DipendentiRepository(user?.idDipendente ?: -1).getDipendente()
+            if(dip != null && dip.serverId != -1L){
                 recyclerView = v.findViewById(R.id.recycler_old_stamp_menu)
                 textViewNoTimbr = v.findViewById(R.id.textView_noTimbr)
-                JuniorApplication.myDatabaseController.getAllTimbr(JuniorUser.JuniorDipendente.serverId){
+                JuniorApplication.myDatabaseController.getAllTimbr(dip.serverId){
                     if(it.newValue != null){
                         val timbr = it.newValue as List<TimbrTable>
                         showTimbr(timbr)

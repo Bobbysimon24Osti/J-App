@@ -40,12 +40,12 @@ object ActivationController {
     fun canTimbrGps():Boolean{
         return perTimbraVirtuale == "1" &&
                 perTimbraVirtualeGps == "1" &&
-                JuniorUser.canTimbr()
+                UserRepository(ParamManager.getLastUserId()).canTimbr()
     }
 
     fun canTimbr():Boolean{
         return perTimbraVirtuale == "1"&&
-                JuniorUser.canTimbr()
+                UserRepository(ParamManager.getLastUserId()).canTimbr()
 
     }
 
@@ -105,7 +105,7 @@ object ActivationController {
                             JuniorApplication.setAppActivated()
 
                             if(oldUrl != null && oldUrl != ParamManager.getUrl()){
-                                JuniorApplication.myDatabaseController.setLastUserId(null)
+                                ParamManager.setLastUserId(null)
                                 return LOGOUT
                             }
                         }

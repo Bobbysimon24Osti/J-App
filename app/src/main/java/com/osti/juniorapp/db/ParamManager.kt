@@ -113,10 +113,10 @@ object ParamManager {
             if(url.takeLast(4) != "api/"){
                 res += "api/"
             }
-            if(this.url != res){
+            if(this.url != res && this.url != null){
                 //Url modificato, facvcio uscire lo user perchè cambiato server
                 NetworkController.apiCliente = null
-                JuniorApplication.myDatabaseController.setLastUserId(null)
+                setLastUserId(null)
             }
             this.url = res
             JuniorApplication.myDatabaseController.setUrl(res)

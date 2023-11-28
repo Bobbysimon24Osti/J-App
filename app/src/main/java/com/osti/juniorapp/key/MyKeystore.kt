@@ -4,6 +4,7 @@ import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import com.osti.juniorapp.application.JuniorApplication
+import com.osti.juniorapp.application.UserRepository
 import com.osti.juniorapp.db.tables.AngelTable
 import com.osti.juniorapp.preferences.JuniorShredPreferences
 import com.osti.juniorapp.utils.MyBase64
@@ -53,8 +54,8 @@ class MyKeystore (context: Context,val angel:String?){
 
             val secretKey = secretKeyEntry.secretKey
             val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-            val tmp =
-                MyBase64.decode(JuniorShredPreferences.getSharedPref("cipfher", context))
+            val shared = JuniorShredPreferences.getSharedPref("cipfher", context)
+            val tmp = MyBase64.decode(shared)
             val spec = GCMParameterSpec(128, tmp)
             cipher.init(Cipher.DECRYPT_MODE, secretKey, spec)
 
@@ -62,6 +63,9 @@ class MyKeystore (context: Context,val angel:String?){
                 MyBase64.decode(angel)
             )
 
+            if(UserRepository.key == null){
+                UserRepository.key = String(decodedData, Charsets.UTF_8)
+            }
             return String(decodedData, Charsets.UTF_8)
 
         }

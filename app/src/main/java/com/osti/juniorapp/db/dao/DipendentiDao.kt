@@ -1,5 +1,7 @@
 package com.osti.juniorapp.db.dao
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -14,4 +16,7 @@ interface DipendentiDao {
 
     @Query ("select * from dipendenti where serverId=:serverId")
     fun getDip (serverId:Long) : DipendentiTable?
+
+    @Query ("select * from dipendenti where serverId=:serverId")
+    fun getLiveDip (serverId:Long) : LiveData<DipendentiTable?>
 }

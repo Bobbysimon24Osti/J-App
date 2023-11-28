@@ -24,7 +24,6 @@ class ActivationActivity : AppCompatActivity() {
 
     val log = LogController(LogController.ATTIVAZIONE)
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_activation)

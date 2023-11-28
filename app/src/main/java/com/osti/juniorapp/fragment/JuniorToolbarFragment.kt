@@ -10,8 +10,10 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import com.osti.juniorapp.R
+import com.osti.juniorapp.application.DipendentiRepository
 import com.osti.juniorapp.application.JuniorApplication
-import com.osti.juniorapp.application.JuniorUser
+import com.osti.juniorapp.application.UserRepository
+import com.osti.juniorapp.db.ParamManager
 
 class JuniorToolbarFragment : Fragment() {
 
@@ -36,7 +38,9 @@ class JuniorToolbarFragment : Fragment() {
 
             drawer = activity?.findViewById(R.id.drawer_layout)
 
-            nameTextView.text = JuniorUser.JuniorDipendente.nome
+            val user = UserRepository(ParamManager.getLastUserId()).getUser()
+            val dip = DipendentiRepository(user?.idDipendente ?: -1).getDipendente()
+            nameTextView.text = dip?.nome ?: "null"
         }
     }
 

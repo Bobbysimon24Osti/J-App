@@ -4,10 +4,11 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.osti.juniorapp.application.ActivationController
 import com.osti.juniorapp.application.JuniorApplication
-import com.osti.juniorapp.application.JuniorUser
+import com.osti.juniorapp.application.UserRepository
 import com.osti.juniorapp.network.NetworkController
 import com.osti.juniorapp.db.ParamManager
 import com.osti.juniorapp.network.NetworkNotifiche
+import com.osti.juniorapp.utils.LogController
 import com.osti.juniorapp.utils.Utils.TENTATIVIMAXRICHIESTE
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -119,19 +120,20 @@ class RiceviDatiThread : Thread() {
 
     val loginObs = PropertyChangeListener{
         if(it.propertyName == "OK" && it.newValue!= null && it.oldValue != null){
-            JuniorUser.userLogged = true
+            UserRepository.logged = true
             val datas = it.newValue as JsonObject
             val params = (it.oldValue as Response<JsonElement>).body()?.asJsonObject!!
-            JuniorApplication.updateUserParams(params, datas.get("serverId").asString)
+            //Prendo il dipendente generato per poter inizializzare invia dati thread
+            val userServerId = datas.get("serverId").asString
+            ParamManager.setLastUserId(userServerId)
+            val dipendente = JuniorApplication.updateUserParams(params, userServerId)
             if(params.has("versione_jweb")){
                 ParamManager.setVersioneJW(params.get("versione_jweb").asString)
             }
 
-
-
             //Invio timbrature e giustificazioni
             if(JuniorApplication.invioDatiThread == null){
-                JuniorApplication.invioDatiThread = InvioDatiThread(JuniorUser.JuniorDipendente.serverId)
+                JuniorApplication.invioDatiThread = InvioDatiThread(dipendente?.serverId ?: -1)
                 JuniorApplication.inviaDati()
             }
 
@@ -147,7 +149,7 @@ class RiceviDatiThread : Thread() {
             val network = NetworkNotifiche(NetworkController.apiCliente)
             network.getnotifiche(notificheObs)
 
-            JuniorApplication.subscribeToFirebaseNotification()
+            JuniorApplication.subscribeToUseIdFirebaseNotification(userServerId)
         }
     }
 
@@ -155,8 +157,9 @@ class RiceviDatiThread : Thread() {
         if(!isDownloading.getDownloading()){
         isDownloading.setDownloadOn()
         if(serverId == null || key == null){
-            if(JuniorUser.userLogged){
-                NetworkController.login(JuniorUser.serverIdUser, JuniorUser.key, obs = loginObs)
+            val repository = UserRepository(ParamManager.getLastUserId())
+            if(UserRepository.logged){
+                NetworkController.login(repository.getUser()?.server_id, JuniorApplication.myKeystore.activeKey, obs = loginObs)
             }
         }
         else{

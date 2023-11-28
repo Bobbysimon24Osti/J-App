@@ -6,6 +6,7 @@ import com.osti.juniorapp.activity.ActivationActivity
 import com.osti.juniorapp.activity.LoginActivity
 import com.osti.juniorapp.network.NetworkController
 import com.osti.juniorapp.db.ParamManager
+import com.osti.juniorapp.utils.LogController
 import retrofit2.Response
 
 object Updater {
@@ -15,17 +16,17 @@ object Updater {
             if(it.newValue is Response<*> && (it.newValue as Response<*>).isSuccessful){
                 StatusController.setOlineOSTI()
                 if(ActivationController.checkResult(it) == ActivationController.ATTIVA){
-                    JuniorApplication.riceviDati(JuniorUser.serverIdUser, JuniorUser.key)
+                    JuniorApplication.riceviDati(ParamManager.getLastUserId() ?: "null", UserRepository.key?:"null")
                     JuniorApplication.inviaDati()
                 }
                 else if (ActivationController.checkResult(it) == ActivationController.NOATTIVA){
                     activity.startActivity(Intent(activity, ActivationActivity::class.java))
-                    JuniorApplication.myDatabaseController.setLastUserId(null)
+                    ParamManager.setLastUserId(null)
                     activity.finish()
                 }
                 else if (ActivationController.checkResult(it) == ActivationController.LOGOUT){
                     activity.startActivity(Intent(activity, LoginActivity::class.java))
-                    JuniorApplication.myDatabaseController.setLastUserId(null)
+                    ParamManager.setLastUserId(null)
                     activity.finish()
                 }
             }
@@ -36,7 +37,7 @@ object Updater {
     }
 
     fun updateNoCheck(){
-        JuniorApplication.riceviDati(JuniorUser.serverIdUser, JuniorUser.key)
+        JuniorApplication.riceviDati(ParamManager.getLastUserId() ?: "null", UserRepository.key?:"null")
         JuniorApplication.inviaDati()
     }
 }

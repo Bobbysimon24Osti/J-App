@@ -5,7 +5,6 @@ import com.google.gson.JsonElement
 import com.osti.juniorapp.BuildConfig
 import com.osti.juniorapp.application.ActivationController
 import com.osti.juniorapp.application.JuniorApplication
-import com.osti.juniorapp.application.JuniorUser
 import com.osti.juniorapp.db.ParamManager
 import retrofit2.Call
 import retrofit2.Callback
@@ -20,11 +19,12 @@ class NetworkNotifiche(val api:ApiCliente?) {
             val guid = ParamManager.getGuid()
             val db = ParamManager.getArchivio()
             val codice = ParamManager.getCodice()
-            if(guid!= null && db != null){
+            val serverId = ParamManager.getLastUserId()
+            if(guid!= null && db != null && serverId != null){
                 val call = api.getNotifiche(
                     db,
-                    JuniorUser.serverIdUser,
-                    JuniorUser.key,
+                    serverId,
+                    JuniorApplication.myKeystore.activeKey ?: "null",
                     guid,
                     codice ?: "null",
                     BuildConfig.VERSION_NAME,
@@ -41,11 +41,12 @@ class NetworkNotifiche(val api:ApiCliente?) {
             val guid = ParamManager.getGuid()
             val db = ParamManager.getArchivio()
             val codice = ParamManager.getCodice()
-            if(guid!= null && db != null){
+            val serverId = ParamManager.getLastUserId()
+            if(guid!= null && db != null && serverId != null){
                 val call = api.setNotificaLetta(
                     db,
-                    JuniorUser.serverIdUser,
-                    JuniorUser.key,
+                    serverId,
+                    JuniorApplication.myKeystore.activeKey ?: "null",
                     guid,
                     codice ?: "null",
                     BuildConfig.VERSION_NAME,

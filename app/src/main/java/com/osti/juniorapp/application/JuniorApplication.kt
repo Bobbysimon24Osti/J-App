@@ -18,8 +18,8 @@ import com.osti.juniorapp.application.ActivationController.checkResult
 import com.osti.juniorapp.application.ActivationController.saveValore
 import com.osti.juniorapp.network.NetworkController
 import com.osti.juniorapp.db.DatabaseController
-import com.osti.juniorapp.db.JuniorDatabase_Impl
 import com.osti.juniorapp.db.ParamManager
+import com.osti.juniorapp.db.tables.DipendentiTable
 import com.osti.juniorapp.db.tables.GiustificheTable
 import com.osti.juniorapp.db.tables.JuniorConfigTable
 import com.osti.juniorapp.db.tables.UserTable
@@ -164,7 +164,7 @@ class JuniorApplication : Application() {
 
         /** Invio sia timbrature che giustificazioni*/
         fun inviaDati() {
-            if (ActivationController.isActivated() && JuniorUser.userLogged){
+            if (ActivationController.isActivated() && UserRepository.logged){
                 invioDatiThread?.isGiustStarted = false
                 invioDatiThread?.isTimbrStarted = false
                 invioDatiThread?.checkForSending()
@@ -175,7 +175,7 @@ class JuniorApplication : Application() {
             if(serverId != "null" || key != "null"){
                 riceviDatiThread?.downloadFromServer(serverId, key)
             }
-            else if (ActivationController.isActivated() && JuniorUser.userLogged){
+            else if (ActivationController.isActivated() && UserRepository.logged){
                 riceviDatiThread?.downloadFromServer()
             }
         }
@@ -192,24 +192,21 @@ class JuniorApplication : Application() {
         fun updateUserOnDb(user:UserTable){
             myDatabaseController.updateUser(user)
         }
-        fun updateUserParams(params: JsonObject, serverId:String){
-            val oldUser = JuniorUser.toUserTable()
-            JuniorUser.serverIdUser = serverId
-            val utente = params.get("utente")?.asJsonObject ?: return
-            val name = utente.get("ute_nome")?.asString?: return
-            JuniorUser.name = name
-            val type = utente.get("ute_accesso")?.asString?: return
-            JuniorUser.type = type
-            val permTimbratura = utente.get("ute_timbrvirtuale")?.asString?: return
-            JuniorUser.permTimbrature = permTimbratura
-            val permWorkFlow = utente.get("ute_workflow")?.asString?: return
-            JuniorUser.permWorkFlow = permWorkFlow
-            val permCartellino = utente.get("ute_cartellini")?.asString?: return
-            JuniorUser.permCartellino = permCartellino
-            val serverIdDipendente = utente.get("ute_dipautorizzato")?.asLong ?:return
-            JuniorUser.JuniorDipendente.serverId = serverIdDipendente
-            val nascondiTimbrature = utente.get("ute_nasconditimbrature")?.asString ?:return
-            JuniorUser.nascondiTimbrature = nascondiTimbrature
+        fun updateUserParams(params: JsonObject, serverId:String) : DipendentiTable?{
+            UserRepository.ignore = false
+            val repositoryUser = UserRepository(ParamManager.getLastUserId())
+
+            val oldUser = repositoryUser.getUser()
+
+            val utente = params.get("utente")?.asJsonObject ?: return null
+            val name = utente.get("ute_nome")?.asString?: return null
+            val type = utente.get("ute_accesso")?.asString?: return null
+            val permTimbratura = utente.get("ute_timbrvirtuale")?.asString?: return null
+            val permWorkFlow = utente.get("ute_workflow")?.asString?: return null
+            val permCartellino = utente.get("ute_cartellini")?.asString?: return null
+            val serverIdDipendente = utente.get("ute_dipautorizzato")?.asLong ?:return null
+            val nascondiTimbrature = utente.get("ute_nasconditimbrature")?.asString ?:return null
+
 
             val livelloManager = let{
                 if(utente.has("ute_liv_manager") && !utente.get("ute_liv_manager").isJsonNull){
@@ -219,40 +216,65 @@ class JuniorApplication : Application() {
                     "null"
                 }
             }
-            JuniorUser.livelloManager = livelloManager
 
-            val jsDipendente = params.get("dipendente")?.asJsonObject?: return
+            val repositoryDipendente = DipendentiRepository(serverIdDipendente)
+            val oldDIpendente = repositoryDipendente.getDipendente()
+
+            val jsDipendente = params.get("dipendente")?.asJsonObject?: return null
 
             val dipBadge = jsDipendente.get("dip_badge").asInt
-            JuniorUser.JuniorDipendente.badge = dipBadge
             val dipName = jsDipendente.get("dip_nome").asString
-            JuniorUser.JuniorDipendente.nome = dipName
             val dipLicenziato = jsDipendente.get("dip_licenziato").asString
-            JuniorUser.JuniorDipendente.licenziato = dipLicenziato
             val dipAssunto = jsDipendente.get("dip_assunto").asString
-            JuniorUser.JuniorDipendente.assunto = dipAssunto
 
+            val newUser = UserTable(
+                serverId,
+                name,
+                type,
+                permTimbratura,
+                permWorkFlow,
+                permCartellino,
+                dipBadge,
+                serverIdDipendente,
+                nascondiTimbrature,
+                livelloManager)
 
-            val jsConfig = params.get("parametri")?.asJsonObject?: return
+            val newDipendente = DipendentiTable(
+                dipName,
+                dipBadge,
+                dipAssunto,
+                dipLicenziato,
+                serverIdDipendente)
+
+            val jsConfig = params.get("parametri")?.asJsonObject?: return null
             if(jsConfig.has("versione_jweb")){
                 ParamManager.setVersioneJW(jsConfig.get("versione_jweb").asString)
             }
             checkConfig(jsConfig)
 
-            val jsGiustificativi = params.get("giustificativi")?.asJsonArray?: return
+            val jsGiustificativi = params.get("giustificativi")?.asJsonArray?: return null
             checkGiustifiche(jsGiustificativi)
 
-            if(oldUser != JuniorUser.toUserTable()){
-                JuniorUser.saveAllOnDb()
+            if(oldUser != newUser){
+                repositoryUser.insert(newUser)
+            }
+            if (oldDIpendente != newDipendente){
+                repositoryDipendente.insert(newDipendente)
             }
             //context.startActivity(Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
             //activity.finish()
+            return newDipendente
         }
 
-        fun subscribeToFirebaseNotification(){
+        fun subscribeToUseIdFirebaseNotification(useId:String){
             CoroutineScope(Dispatchers.Default).launch {
-                Firebase.messaging.subscribeToTopic(getStrPIva())
-                Firebase.messaging.subscribeToTopic(getStrUserId())
+                Firebase.messaging.subscribeToTopic(getStrUserId(useId))
+            }
+        }
+
+        fun subscribeToPIvaFirebaseNotification(pIva:String){
+            CoroutineScope(Dispatchers.Default).launch {
+                Firebase.messaging.subscribeToTopic(getStrPIva(pIva))
             }
         }
 
@@ -263,15 +285,22 @@ class JuniorApplication : Application() {
             }
         }
 
+        private fun getStrPIva(str:String) : String{
+            return str + "_" + ParamManager.getArchivio()
+        }
+
+        private fun getStrUserId(str:String) : String{
+            return "ute_id_$str"
+        }
+
         private fun getStrPIva() : String{
             val pIva = myDatabaseController.getConfig("lic_piva")
             return pIva.valore + "_" + ParamManager.getArchivio()
         }
 
         private fun getStrUserId() : String{
-            return "ute_id_" + (JuniorUser.serverIdUser)
+            return "ute_id_" + (ParamManager.getLastUserId())
         }
-
         fun updateLocalGiust (datas:JsonArray){
             for(i in 0 until datas.size()){
                 myDatabaseController.creaGiustificheRecord(GiustificheConverter.getRecordFromJson(datas[i] as JsonObject))
@@ -282,6 +311,12 @@ class JuniorApplication : Application() {
         fun setLastFragment(fragment:String?, context: Context?){
             if (fragment!= null && context != null){
                 JuniorShredPreferences.setSharedPref(fragment, "LAST FRAGMENT", context)
+            }
+        }
+
+        fun setFileAsLastFragment(context: Context?){
+            if (context != null){
+                JuniorShredPreferences.setSharedPref("true", "FILEFRAGMENT", context)
             }
         }
 
@@ -314,6 +349,14 @@ class JuniorApplication : Application() {
                 saveValore(configTmp)
             }
 
+            try{
+                val pIva = configs.get("lic_piva").asString
+                subscribeToPIvaFirebaseNotification(pIva)
+            }
+            catch (e:Exception){
+
+            }
+
             myDatabaseController.creaMultipleConfig(newConfigs)
         }
 
@@ -332,14 +375,12 @@ class JuniorApplication : Application() {
             }
             else{
                 //Se c'è un id allora un utente è già registrato, e possiamo entrare con la chiave
-                JuniorUser.getUserFromDb(userId)
-                //login()
                 return "MAIN"
             }
         }
 
         fun getDirFiles(activity: Activity?): String{
-            val dir = activity?.filesDir?.absolutePath  + "/" + JuniorUser.name
+            val dir = activity?.filesDir?.absolutePath  + "/" + (UserRepository(ParamManager.getLastUserId()).getUser()?.name ?: "null" )
             val file = File(dir)
             if(!file.exists()){
                 file.mkdirs()

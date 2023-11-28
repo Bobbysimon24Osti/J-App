@@ -15,9 +15,11 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.osti.juniorapp.R
 import com.osti.juniorapp.activity.MainActivity
 import com.osti.juniorapp.application.ActivationController
+import com.osti.juniorapp.application.DipendentiRepository
 import com.osti.juniorapp.application.JuniorApplication
-import com.osti.juniorapp.application.JuniorUser
 import com.osti.juniorapp.application.StatusController
+import com.osti.juniorapp.application.UserRepository
+import com.osti.juniorapp.db.ParamManager
 import com.osti.juniorapp.db.tables.GiustificheRecord
 import com.osti.juniorapp.thread.RiceviDatiThread
 import com.osti.juniorapp.utils.GiustificheConverter
@@ -55,8 +57,10 @@ class OldGiustificheListFragment : Fragment() {
 
             refreshView = v.findViewById(R.id.refreshLayout_giust)
 
-            if(JuniorUser.JuniorDipendente.serverId!=-1L){
-                giustFlow = JuniorApplication.myDatabaseController.getGiustFlow(JuniorUser.JuniorDipendente.serverId)
+            val user = UserRepository(ParamManager.getLastUserId()).getUser()
+            val dip = DipendentiRepository(user?.idDipendente ?: -1).getDipendente()
+            if(dip != null && dip.serverId!=-1L){
+                giustFlow = JuniorApplication.myDatabaseController.getGiustFlow(dip.serverId)
             }
             listenToChanges()
 
@@ -135,8 +139,10 @@ class OldGiustificheListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        if(JuniorUser.JuniorDipendente.serverId != -1L) {
-            JuniorApplication.myDatabaseController.getAllGiustByDip(JuniorUser.JuniorDipendente.serverId){
+        val user = UserRepository(ParamManager.getLastUserId()).getUser()
+        val dip = DipendentiRepository(user?.idDipendente ?: -1).getDipendente()
+        if(dip != null && dip.serverId != -1L) {
+            JuniorApplication.myDatabaseController.getAllGiustByDip(dip.serverId){
                 if(it.newValue != null){
                     showRecyclerView(it.newValue as List<GiustificheRecord>)
                 }
