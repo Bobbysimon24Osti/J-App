@@ -6,12 +6,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.TextView
+import androidx.cardview.widget.CardView
+import androidx.constraintlayout.widget.ConstraintLayout
 import com.osti.juniorapp.R
+import com.osti.juniorapp.application.ActivationController
+import com.osti.juniorapp.application.StatusController
 
 class GiustificheFragmentSelection : Fragment() {
 
-    lateinit var buttonStorico: Button
-    lateinit var buttonNuove: Button
+    lateinit var textViewNoInternet: TextView
+
+    lateinit var buttonStorico: CardView
+    lateinit var buttonNuove: CardView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -24,21 +31,33 @@ class GiustificheFragmentSelection : Fragment() {
     }
 
     private fun init(v:View){
-        buttonStorico = v.findViewById(R.id.button_storicoRichieste)
-        buttonNuove = v.findViewById(R.id.button_nuoveRichieste)
+        textViewNoInternet = v.findViewById(R.id.textView_noInternet_richieste)
 
-        buttonNuove.setOnClickListener{
-            activity?.supportFragmentManager?.beginTransaction()?.apply{
-                replace(R.id.fragmentContainerView, GestisciRichiesteFragment())
-                commit()
+        buttonStorico = v.findViewById(R.id.cardView_storicoRichieste)
+        buttonNuove = v.findViewById(R.id.cardView_nuoveRichieste)
+
+        if(ActivationController.isActivated() && StatusController.statusApp.value?.cliente == true){
+            textViewNoInternet.visibility = View.GONE
+            buttonNuove.isClickable = true
+            buttonStorico.isClickable = true
+            buttonNuove.setOnClickListener{
+                activity?.supportFragmentManager?.beginTransaction()?.apply{
+                    replace(R.id.fragmentContainerView, GestisciRichiesteFragment())
+                    commit()
+                }
+            }
+
+            buttonStorico.setOnClickListener{
+                activity?.supportFragmentManager?.beginTransaction()?.apply{
+                    replace(R.id.fragmentContainerView, StoricoRichiesteFragment())
+                    commit()
+                }
             }
         }
-
-        buttonStorico.setOnClickListener{
-            activity?.supportFragmentManager?.beginTransaction()?.apply{
-                replace(R.id.fragmentContainerView, StoricoRichiesteFragment())
-                commit()
-            }
+        else{
+            textViewNoInternet.visibility = View.VISIBLE
+            buttonNuove.isClickable = false
+            buttonStorico.isClickable = false
         }
     }
 

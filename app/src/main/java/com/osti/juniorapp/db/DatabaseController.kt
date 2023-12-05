@@ -431,6 +431,13 @@ class DatabaseController (context: Context) {
         return myDB.mGiustificheRecordDao().getGiustFlowNoMieDaGestire(dipId)
     }
 
+    fun getGiustFlowNoMieDaGestireStatic (dipId:Long, observer: PropertyChangeListener){
+        CoroutineScope(Dispatchers.IO).async {
+            val tmp = myDB.mGiustificheRecordDao().getGiustFlowNoMieDaGestire(dipId)
+            observer.propertyChange(PropertyChangeEvent("DATABASE CONTROLLER", "GET GIUST BY SERVER ID", tmp, tmp))
+        }
+    }
+
     fun getGiustFlow (dip: Long): Flow<List<GiustificheRecord?>>{
         return myDB.mGiustificheRecordDao().getGiustFlow(dip)
     }
@@ -438,6 +445,12 @@ class DatabaseController (context: Context) {
     fun setGiustApprovato(id:Long){
         CoroutineScope(Dispatchers.IO).async {
             myDB.mGiustificheRecordDao().setApprovato(id)
+        }
+    }
+
+    fun setGiustApprovatoLiv1(id:Long){
+        CoroutineScope(Dispatchers.IO).async {
+            myDB.mGiustificheRecordDao().setApprovatoLiv1(id)
         }
     }
     fun setGiustNegato(id:Long){
@@ -495,13 +508,10 @@ class DatabaseController (context: Context) {
         }
     }
 
-    fun getNotificheFlow() : Flow<List<NotificheTable>> {
-        return myDB.mNotificheDao().getNotificheFlow()
-    }
 
-    fun getNotificheList(observer: PropertyChangeListener) {
+    fun getNotificheList(id:Long, observer: PropertyChangeListener) {
         CoroutineScope(Dispatchers.IO).launch {
-            val notifiche = myDB.mNotificheDao().getNotificheList()
+            val notifiche = myDB.mNotificheDao().getNotificheList(id)
             observer.propertyChange(PropertyChangeEvent("DATABASE CONTROLLER", "GET NOTIFICHE LIST", notifiche, notifiche))
         }
     }

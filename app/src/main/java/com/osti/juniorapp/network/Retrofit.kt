@@ -4,6 +4,7 @@ import com.google.gson.GsonBuilder
 import com.osti.juniorapp.db.ParamManager
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
+import okhttp3.Protocol
 import okhttp3.Request
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -90,6 +91,7 @@ class RetrofitClientJuniorwe private constructor() {
                     sslSocketFactory,
                     trustAllCerts[0] as X509TrustManager
                 )
+                builder.protocols(List(2){ Protocol.HTTP_2; Protocol.HTTP_1_1})
                 builder.hostnameVerifier(HostnameVerifier { hostname, session -> true })
             } catch (e: java.lang.Exception) {
                 throw RuntimeException(e)

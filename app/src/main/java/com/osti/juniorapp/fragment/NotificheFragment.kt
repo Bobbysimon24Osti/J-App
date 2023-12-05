@@ -19,6 +19,8 @@ import com.osti.juniorapp.application.JuniorApplication
 import com.osti.juniorapp.db.tables.GiustificheRecord
 import com.osti.juniorapp.db.tables.NotificheTable
 import com.osti.juniorapp.fragment.giustificazioni.DettagliOldGiustificativiFragment
+import com.osti.juniorapp.fragment.giustificazioni.GestisciRichiesteFragment
+import com.osti.juniorapp.fragment.giustificazioni.StoricoRichiesteFragment
 import com.osti.juniorapp.network.NetworkController
 import com.osti.juniorapp.network.NetworkNotifiche
 import com.osti.juniorapp.utils.Utils.FORMATDATEHOURS
@@ -68,7 +70,7 @@ class NotificheFragment : Fragment() {
         notificheNetwork.getnotifiche{
             if (it.newValue is Deferred<*>){
                 (it.newValue as Deferred<Unit>).invokeOnCompletion {
-                    JuniorApplication.myDatabaseController.getNotificheList{
+                    JuniorApplication.myDatabaseController.getNotificheList(JuniorApplication.myJuniorUser.value?.serverIdUser?.toLong() ?: -1){
                         refresher.isRefreshing = false
                         if(it.newValue is List<*>){
                             adapt(it.newValue as List<NotificheTable?>)
@@ -79,15 +81,6 @@ class NotificheFragment : Fragment() {
         }
     }
 
-    fun listenToNotifiche(){
-        MainScope().async {
-            JuniorApplication.myDatabaseController.getNotificheFlow().collect{
-                if (it is List<*>) {
-                    adapt(it)
-                }
-            }
-        }
-    }
 
     private fun adapt(list:List<NotificheTable?>) = activity?.runOnUiThread{
         if(isAdded){
@@ -150,17 +143,22 @@ class NotificheFragment : Fragment() {
                 holder.textViewMessaggio.text = notifica?.n_messaggio ?: "ERROR"
 
                 holder.constraintLayoutNotifica.setOnClickListener{
-                    if (notifica != null && notifica.n_tipo_notifica == "giustificazioni" && !notifica.n_messaggio.contains("richiedo")) {
-                        var tmpId: Long? = -1
-                        var tmpRichiesto: String? = "-1"
-                        JuniorApplication.myDatabaseController.getGiustByServerId(notifica.n_id_record_notifica){
-                            if(it.newValue is GiustificheRecord){
-                                tmpId = (it.newValue as GiustificheRecord).id
-                                tmpRichiesto = (it.newValue as GiustificheRecord).richiesto
+                    if (notifica != null && notifica.n_tipo_notifica == "giustificazioni") {
+                            var tmpId: Long? = -1
+                            var tmpRichiesto: String? = "-1"
+                            JuniorApplication.myDatabaseController.getGiustByServerId(notifica.n_id_record_notifica){
+                                if(it.newValue is GiustificheRecord){
+                                    tmpId = (it.newValue as GiustificheRecord).id
+                                    tmpRichiesto = (it.newValue as GiustificheRecord).richiesto
+                                }
+                            }.invokeOnCompletion {
+                                if(tmpRichiesto != "richiesto"){
+                                    showDettagliFragment(tmpId, tmpRichiesto)
+                                }
+                                else{
+                                    showNuoveRichiesteFragment(notifica.n_id_record_notifica)
+                                }
                             }
-                        }.invokeOnCompletion {
-                            showDettagliFragment(tmpId, tmpRichiesto)
-                        }
                     }
                     else if (notifica != null && notifica.n_tipo_notifica == "file"){
                         activity.showFileFragment()
@@ -174,6 +172,18 @@ class NotificheFragment : Fragment() {
                 val fragment = DettagliOldGiustificativiFragment.newInstance(id, richiesto)
                 activity.supportFragmentManager.beginTransaction().apply{
                     replace(R.id.fragmentContainerView_notificheGiust, fragment)
+                    commit()
+                }
+            }
+        }
+
+        fun showNuoveRichiesteFragment(id:Long?){
+            if(id!=null){
+                val tmpArr = LongArray(1)
+                tmpArr[0] = id
+                val fragment = GestisciRichiesteFragment.newInstance(tmpArr)
+                activity.supportFragmentManager.beginTransaction().apply{
+                    replace(R.id.fragmentContainerView, fragment)
                     commit()
                 }
             }

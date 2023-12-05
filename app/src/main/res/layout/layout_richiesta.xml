@@ -16,14 +16,14 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
             android:layout_marginTop="16dp"
-            android:layout_marginEnd="16dp"
+            android:layout_marginEnd="8dp"
             android:text="Nome Dipendente"
             android:textColor="#000000"
             android:textSize="24dp"
             app:autoSizeMaxTextSize="30dp"
             app:autoSizeMinTextSize="24dp"
             app:autoSizeTextType="uniform"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/guideline28"
             app:layout_constraintStart_toStartOf="@+id/guideline22"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -42,14 +42,14 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
             android:layout_marginTop="8dp"
-            android:layout_marginEnd="16dp"
+            android:layout_marginEnd="8dp"
             android:maxLines="1"
             android:text="Permesso"
             android:textAllCaps="true"
             app:autoSizeMaxTextSize="24dp"
             app:autoSizeMinTextSize="14dp"
             app:autoSizeTextType="uniform"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/guideline28"
             app:layout_constraintStart_toStartOf="@+id/guideline22"
             app:layout_constraintTop_toBottomOf="@+id/textView25" />
 
@@ -89,10 +89,10 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:layout_marginEnd="16dp"
+            android:layout_marginEnd="8dp"
             android:text="TextView"
             app:autoSizeTextType="uniform"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/guideline28"
             app:layout_constraintStart_toEndOf="@+id/textView24"
             app:layout_constraintTop_toTopOf="@+id/textView24" />
 
@@ -111,13 +111,30 @@
             android:id="@+id/textView_giustAl"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
+            android:layout_marginEnd="8dp"
             android:text="TextView"
             app:autoSizeTextType="uniform"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/guideline28"
             app:layout_constraintStart_toEndOf="@+id/textView27"
             app:layout_constraintStart_toStartOf="@+id/textView_giustDal"
             app:layout_constraintTop_toTopOf="@+id/textView27" />
+
+        <ImageView
+            android:id="@+id/imageView_statusRichiesta"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toBottomOf="@+id/textView_giustAl"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/textView_nomeDip"
+            app:srcCompat="@drawable/status_circle_approvato" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline28"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_end="30dp" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

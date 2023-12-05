@@ -145,6 +145,7 @@ class TimbrVirtualeFragment () : Fragment() {
             imageViewOnServer.visibility = View.INVISIBLE
             textViewServer.visibility = View.INVISIBLE
 
+            initSpinner(requireContext())
         }
 
         /*val i = Calendar.getInstance()
@@ -159,8 +160,6 @@ class TimbrVirtualeFragment () : Fragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-
-        initSpinner(context)
 
         initPermissionRequest(context)
 

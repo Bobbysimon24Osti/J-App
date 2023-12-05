@@ -2,10 +2,12 @@ package com.osti.juniorapp.thread
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import com.osti.juniorapp.application.ActivationController
 import com.osti.juniorapp.application.JuniorApplication
 import com.osti.juniorapp.network.NetworkController
 import com.osti.juniorapp.db.ParamManager
 import com.osti.juniorapp.network.NetworkNotifiche
+import com.osti.juniorapp.utils.LogController
 import com.osti.juniorapp.utils.Utils.TENTATIVIMAXRICHIESTE
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -131,7 +133,12 @@ class RiceviDatiThread : Thread() {
             }
 
             //Scarico Giustificazioni
-            NetworkController.getGiustifiche(giustificheObs)
+            if (ActivationController.permWorkFlow == "1"){
+                NetworkController.getGiustifiche(giustificheObs)
+            }
+            else{
+                isDownloading.setGiust(false)
+            }
 
             //Scarico notifiche
             val network = NetworkNotifiche(NetworkController.apiCliente)
@@ -139,7 +146,8 @@ class RiceviDatiThread : Thread() {
         }
     }
 
-    fun downloadFromServer(serverId:String? = null, key:String? = null){if(!isDownloading.getDownloading()){
+    fun downloadFromServer(serverId:String? = null, key:String? = null){
+        if(!isDownloading.getDownloading()){
         isDownloading.setDownloadOn()
         if(serverId == null || key == null){
             val user = JuniorApplication.myJuniorUser

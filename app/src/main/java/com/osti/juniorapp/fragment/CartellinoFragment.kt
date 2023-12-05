@@ -111,7 +111,7 @@ class CartellinoFragment : Fragment() {
         }
     }
 
-    private fun selectActualMonth(){
+    private fun selectActualMonth(select:Boolean = true){
         var mese = (Calendar.getInstance().get(Calendar.MONTH) + 1).toString()
         if(mese.length == 1){
             mese = "0$mese"
@@ -120,7 +120,11 @@ class CartellinoFragment : Fragment() {
             if(view.tag == mese && view is CardView){
                 val tmpConstraint = view.getChildAt(0)
                 tmpConstraint.background = ResourcesCompat.getDrawable(resources, R.drawable.mese_attuale_background, null)
+                if(!select){
+                    tmpConstraint.background = ResourcesCompat.getDrawable(resources, R.drawable.mesi_background, null)
+                }
             }
+
         }
     }
 
@@ -128,6 +132,13 @@ class CartellinoFragment : Fragment() {
         try{
             val anno = textViewAnno.text.toString()
             textViewAnno.text = (anno.toInt() + 1).toString()
+
+            if(textViewAnno.text.toString() != Calendar.getInstance().get(Calendar.YEAR).toString()){
+                selectActualMonth(false)
+            }
+            else{
+                selectActualMonth()
+            }
         }
         catch (e:Exception){
 
@@ -138,6 +149,13 @@ class CartellinoFragment : Fragment() {
         try{
             val anno = textViewAnno.text.toString()
             textViewAnno.text = (anno.toInt() - 1).toString()
+
+            if(textViewAnno.text.toString() != Calendar.getInstance().get(Calendar.YEAR).toString()){
+                selectActualMonth(false)
+            }
+            else{
+                selectActualMonth()
+            }
         }
         catch (e:Exception){
 

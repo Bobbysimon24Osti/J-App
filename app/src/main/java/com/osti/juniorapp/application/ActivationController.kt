@@ -38,15 +38,24 @@ object ActivationController {
     }
 
     fun canTimbrGps():Boolean{
-        return perTimbraVirtuale == "1" &&
-                perTimbraVirtualeGps == "1" &&
-                JuniorApplication.myJuniorUser.value!!.canTimbr() ?: false
+        try{
+            return perTimbraVirtuale == "1" &&
+                    perTimbraVirtualeGps == "1" &&
+                    JuniorApplication.myJuniorUser.value!!.canTimbr() ?: false
+        }
+        catch (e:Exception){
+            return false
+        }
     }
 
     fun canTimbr():Boolean{
-        return perTimbraVirtuale == "1"&&
-                JuniorApplication.myJuniorUser.value?.canTimbr() ?: false
-
+        try{
+            return perTimbraVirtuale == "1"&&
+                    JuniorApplication.myJuniorUser.value?.canTimbr() ?: false
+        }
+        catch (e:Exception){
+            return false
+        }
     }
 
     fun saveValore(v:JuniorConfigTable){

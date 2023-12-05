@@ -27,7 +27,7 @@ object ParamManager {
     fun loadFromDb(complete:PropertyChangeListener){
         CoroutineScope(Dispatchers.IO).async {
             val numParam = DatabaseController.myDB.mParametriDao().contaParametri()
-            if (numParam != null && numParam < 1) {
+            if (numParam != null && numParam == 0) {
                 DatabaseController.myDB.mParametriDao()
                     .creaParametri(ParametriTable(Generator.generateGuid(), null))
             }

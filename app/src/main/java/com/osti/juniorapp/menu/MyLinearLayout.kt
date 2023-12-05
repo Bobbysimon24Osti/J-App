@@ -86,6 +86,9 @@ class MyConstraintLayout (context:Context,val textView:MyMenuTextView) : FrameLa
             resources.getString(R.string.menu_richiesta_giust)->{
                 icone.setImageResource(R.drawable.baseline_add_circle_outline_light_24)
             }
+            resources.getString(R.string.menu_cartellino)->{
+                icone.setImageResource(R.drawable.baseline_calendar_month_24_light)
+            }
             resources.getString(R.string.menu_lista_giust)->{
                 icone.setImageResource(R.drawable.baseline_checklist_light_24)
             }

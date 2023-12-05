@@ -92,7 +92,10 @@ class LoginActivity : AppCompatActivity() {
 
             //MEtto a false per evitare problemi con un possibile task precedente
             JuniorApplication.riceviDatiThread?.isDownloading = RiceviDatiThread.IsDownloading()
-            startActivity(Intent(applicationContext, MainActivity::class.java).putExtra("LOGIN", "LOGINACTIVITY"))
+            startActivity(Intent(applicationContext, MainActivity::class.java)
+                .putExtra("LOGIN", "LOGINACTIVITY")
+                .putExtra("SERVERIDUSER", serverid)
+                .putExtra("KEY", key))
             finish()
         }
         else{
@@ -151,6 +154,10 @@ class LoginActivity : AppCompatActivity() {
             }
 
             textViewUrl.text = ParamManager.getUrlNoApi()
+            val tmp = ParamManager.getArchivio()
+            if(tmp!= null && tmp != "null"){
+                archivioView.setText(tmp)
+            }
         }
     }
     override fun onBackPressed() {

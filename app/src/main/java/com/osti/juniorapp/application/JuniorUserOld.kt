@@ -61,7 +61,7 @@ class JuniorUserOld{
 
 
     fun canTimbr():Boolean{
-        if(permTimbrature == "coordinate" || permTimbrature == "qualsiasi"){
+        if(permTimbrature == "coordinate" || permTimbrature == "qualsiasi" || permTimbrature == "coordinate_geofence"){
             return true
         }
         return false
@@ -75,7 +75,7 @@ class JuniorUserOld{
     }
 
     fun positionObb():Boolean{
-        if(permTimbrature == "coordinate"){
+        if(permTimbrature == "coordinate" || permTimbrature == "coordinate_geofence"){
             return true
         }
         return false

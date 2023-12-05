@@ -81,7 +81,6 @@ class JuniorApplication : Application() {
                         val res = checkResult(p0)
                         when (res) {
                             ActivationController.ATTIVA -> {
-                                riceviDatiThread = RiceviDatiThread()
                                 log.insertLog("Attivazione completata con successo")
                                 startActivity(userId, false)
                             }
@@ -173,7 +172,10 @@ class JuniorApplication : Application() {
         }
 
         fun riceviDati(serverId:String? = null, key:String? = null){
-            if(serverId != null || key != null){
+            if(riceviDatiThread == null){
+                riceviDatiThread = RiceviDatiThread()
+            }
+            if(serverId != null && key != null){
                 riceviDatiThread?.downloadFromServer(serverId, key)
             }
             else if (ActivationController.isActivated()
@@ -183,7 +185,7 @@ class JuniorApplication : Application() {
         }
 
         fun setLastUser(user: JuniorUserOld?){
-            unSubscribeToFirebaseNotification()
+            //unSubscribeToFirebaseNotification()
             if(user== null){
                 isUserChecked = false
             }
@@ -220,7 +222,9 @@ class JuniorApplication : Application() {
             if(jsConfig.has("versione_jweb")){
                 ParamManager.setVersioneJW(jsConfig.get("versione_jweb").asString)
             }
+
             checkConfig(jsConfig)
+            subscribeToFirebaseUser(serverId)
 
             val jsGiustificativi = params.get("giustificativi")?.asJsonArray?: return
             checkGiustifiche(jsGiustificativi)
@@ -243,28 +247,36 @@ class JuniorApplication : Application() {
             if (oldUser.hashCode() != newUser.hashCode()){
                 setLastUser(newUser)
             }
-            //context.startActivity(Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-            //activity.finish()
-            val strPIvaDb = jsConfig.get("lic_piva").asString + "_" + ParamManager.getArchivio()
-            val strUserId = "ute_id_" + newUser.serverIdUser
-
-            //Iscrivo alle notifiche dell'utente l'app
-            subscribeToFirebaseNotification()
         }
 
-        fun subscribeToFirebaseNotification(){
-            Firebase.messaging.subscribeToTopic(getStrPIva())
-            Firebase.messaging.subscribeToTopic(getStrUserId())
+        fun subscribeToFirebasePIva(pIva:String?){
+            if(pIva != null){
+                val strTmp = getStrPIva(pIva)
+                Firebase.messaging.subscribeToTopic(strTmp)
+            }
         }
 
-        fun unSubscribeToFirebaseNotification(){
-            Firebase.messaging.unsubscribeFromTopic(getStrPIva())
-            Firebase.messaging.unsubscribeFromTopic(getStrUserId())
+        fun unSubscribeToFirebasePIva(pIva:String?){
+            if(pIva != null) {
+                Firebase.messaging.unsubscribeFromTopic(getStrPIva(pIva))
+            }
         }
 
-        private fun getStrPIva() : String{
-            val pIva = myDatabaseController.getConfig("lic_piva")
-            return pIva.valore + "_" + ParamManager.getArchivio()
+        fun subscribeToFirebaseUser(user:String?){
+            if(user != null) {
+                val strTmp = getStrUserId()
+                Firebase.messaging.subscribeToTopic(strTmp)
+            }
+        }
+
+        fun unSubscribeToFirebaseUser(user:String?){
+            if(user != null) {
+                Firebase.messaging.unsubscribeFromTopic(getStrUserId())
+            }
+        }
+
+        private fun getStrPIva(pIva:String) : String{
+            return pIva + "_" + ParamManager.getArchivio()
         }
 
         private fun getStrUserId() : String{
@@ -272,11 +284,11 @@ class JuniorApplication : Application() {
         }
 
         fun updateLocalGiust (datas:JsonArray){
+            myDatabaseController.clearGiust()
             for(i in 0 until datas.size()){
                 myDatabaseController.creaGiustificheRecord(GiustificheConverter.getRecordFromJson(datas[i] as JsonObject))
             }
         }
-
 
         fun setLastFragment(fragment:String?, context: Context?){
             if (fragment!= null && context != null){
@@ -312,8 +324,9 @@ class JuniorApplication : Application() {
                 newConfigs.add(configTmp)
                 saveValore(configTmp)
             }
-
             myDatabaseController.creaMultipleConfig(newConfigs)
+
+            subscribeToFirebasePIva(configs.get("lic_piva").asString)
         }
 
         private fun createDip(dip:JsonObject, id:Long) : JuniorUserOld.JuniorDip {

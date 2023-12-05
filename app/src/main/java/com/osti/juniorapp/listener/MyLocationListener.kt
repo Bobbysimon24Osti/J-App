@@ -94,15 +94,6 @@ object MyLocationListener : LocationListenerCompat{
             startLocationListenerLegacy(context)
         }
     }
-    @RequiresApi(Build.VERSION_CODES.S)
-    @SuppressLint("MissingPermission")
-    fun getManual(context: Context){
-        LocationManagerCompat.getCurrentLocation(JuniorApplication.mLocationManager, LocationManager.FUSED_PROVIDER, null, context.mainExecutor){
-            if(it != null){
-                savePosition(it)
-            }
-        }
-    }
 
     @SuppressLint("MissingPermission") //DEVE GIA ESSERE STATO FATTO CONtROLLO PERMESSI
     private fun startLocationListenerLegacy(context: Context) { //PER ANDROID VECCHIO

@@ -8,10 +8,14 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.osti.juniorapp.R
+import com.osti.juniorapp.application.ActivationController
 import com.osti.juniorapp.application.JuniorApplication
 import com.osti.juniorapp.application.JuniorUserOld
 import com.osti.juniorapp.db.ParamManager
 import com.osti.juniorapp.db.tables.LogTable
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class AccountFragment : Fragment() {
 
@@ -58,9 +62,7 @@ class AccountFragment : Fragment() {
 
             textViewLastMsg = view.findViewById(R.id.textView_ultimoMsg)
 
-            JuniorApplication.myJuniorUser.observe(viewLifecycleOwner){
-                refreshData(it)
-            }
+
             refreshData(JuniorApplication.myJuniorUser.value)
 
 
@@ -96,6 +98,12 @@ class AccountFragment : Fragment() {
     private fun onClickEsci(v:View){
         //startActivity(Intent(super.getContext(), LoginActivity::class.java))
         JuniorApplication.setLastUser(null)
+        CoroutineScope(Dispatchers.Default).launch {
+            val pIva = JuniorApplication.myDatabaseController.getConfig("lic_piva").valore
+            JuniorApplication.unSubscribeToFirebasePIva(pIva)
+            JuniorApplication.unSubscribeToFirebaseUser(JuniorApplication.myJuniorUser.value?.serverIdUser)
+        }
+
     }
 
 

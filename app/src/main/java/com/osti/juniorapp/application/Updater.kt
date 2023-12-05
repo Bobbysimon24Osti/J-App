@@ -35,8 +35,8 @@ object Updater {
         }
     }
 
-    fun updateNoCheck(){
-        JuniorApplication.riceviDati(JuniorApplication.myJuniorUser.value?.serverIdUser, JuniorApplication.myJuniorUser.value?.key)
+    fun updateNoCheck(serverIdUser:String?, key:String?){
+        JuniorApplication.riceviDati(serverIdUser, key)
         JuniorApplication.inviaDati()
     }
 }

@@ -16,6 +16,7 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -30,6 +31,7 @@ import com.osti.juniorapp.BuildConfig
 import com.osti.juniorapp.fragment.file.FileFragment
 import com.osti.juniorapp.R
 import com.osti.juniorapp.application.ActivationController
+import com.osti.juniorapp.application.JuniorApplication
 import com.osti.juniorapp.application.JuniorApplication.Companion.myDatabaseController
 import com.osti.juniorapp.application.JuniorApplication.Companion.myJuniorUser
 import com.osti.juniorapp.application.JuniorApplication.Companion.setLastFragment
@@ -53,6 +55,7 @@ import com.osti.juniorapp.fragment.giustificazioni.GiustificheFragmentSelection
 import com.osti.juniorapp.menu.MyConstraintLayout
 import com.osti.juniorapp.menu.MyMenuTextView
 import com.osti.juniorapp.preferences.JuniorShredPreferences
+import com.osti.juniorapp.utils.LogController
 import com.osti.juniorapp.utils.NavigationMenuOptions
 import retrofit2.Response
 import kotlin.system.exitProcess
@@ -90,6 +93,8 @@ class MainActivity : AppCompatActivity(){
         setContentView(R.layout.activity_main)
 
         setSupportActionBar(findViewById(R.id.main_toolbar))
+
+        onBackPressedDispatcher.addCallback(this,onBackPressedCallback)
 
         /**
          * Carico in memoria lo user nel db
@@ -137,8 +142,13 @@ class MainActivity : AppCompatActivity(){
         if(!firstime){
             Updater.updateServer(this)
         }
+        else if (intent.hasExtra("SERVERIDUSER") && intent.hasExtra("KEY")){
+            val serverIdUser = intent.getStringExtra("SERVERIDUSER") ?: "null"
+            val key =intent.getStringExtra("KEY") ?: "null"
+            Updater.updateNoCheck(serverIdUser, key)
+        }
         else{
-            Updater.updateNoCheck()
+            Updater.updateNoCheck(null , null)
         }
         firstime = false
         //startRIghtFragment()
@@ -262,7 +272,6 @@ class MainActivity : AppCompatActivity(){
 
     private fun updateNavView(user: JuniorUserOld? = myJuniorUser.value) = runOnUiThread(){
         if(navigationMenu.isNotEmpty()){
-
             navigationMenu.removeAllViews()
         }
         if(user != null){
@@ -274,8 +283,18 @@ class MainActivity : AppCompatActivity(){
                 if(x == R.string.menu_old_stamp && user.nascondiTimbrature == "1"){
                     continue
                 }
+                if(x == R.string.menu_file && user.permWorkFlow == "0"){
+                    continue
+                }
+                if(x == R.string.menu_gestisci_giustificazioni && user.permWorkFlow == "0"){
+                    continue
+                }
                 var tmpTextView: MyMenuTextView? = MyMenuTextView(this, resources.getString(x))
-                if(resources.getString(x) == resources.getString(R.string.menu_richiesta_giust) || resources.getString(x) == resources.getString(R.string.menu_lista_giust)){
+                if(resources.getString(x) == resources.getString(R.string.menu_richiesta_giust) ||
+                            resources.getString(x) == resources.getString(R.string.menu_lista_giust) ||
+                            resources.getString(x) == resources.getString(R.string.menu_cartellino) ||
+                            resources.getString(x) == resources.getString(R.string.menu_gestisci_giustificazioni) ||
+                            resources.getString(x) == resources.getString(R.string.menu_file)){
                     if(ActivationController.permWorkFlow == "1"){
                         if(user.permWorkFlow != "1"){
                             tmpTextView?.setTextColor(Color.LTGRAY)
@@ -490,6 +509,14 @@ class MainActivity : AppCompatActivity(){
         }
     }
 
+    private fun showGiustificheDisambiguationFragment(){
+        setTitoloSchermata(resources.getString(R.string.menu_gestisci_giustificazioni))
+        supportFragmentManager.beginTransaction().apply {
+            replace(R.id.fragmentContainerView, GiustificheFragmentSelection())
+            commit()
+        }
+    }
+
     private fun showGiustificheFragment(){
         if( myJuniorUser.value?.dipentende?.nome =="null"){
             //ARRIVATO DIPENDENTE NULLO DA SERVER, QUANDO NON C'è UN DIPENDENTE ASSOCIATO ALL'UTENTE
@@ -548,6 +575,10 @@ class MainActivity : AppCompatActivity(){
 
     var lockFragments = false
     fun startRIghtFragment() {
+        val user = JuniorApplication.myJuniorUser.value
+        if ((user?.type == "manager" || user?.type == "superAdmin" || user?.type == "admin") && user?.dipentende?.nome == "null"){
+            setLastFragment(GiustificheFragmentSelection::class.simpleName, this)
+        }
         if (nuoveNotifiche){
             setLastFragment(NotificheFragment::class.simpleName, this)
         }
@@ -555,6 +586,9 @@ class MainActivity : AppCompatActivity(){
             when (getLastFragment()){
                 TimbrVirtualeFragment::class.simpleName-> {
                     showTimbrFragment()
+                }
+                GiustificheFragmentSelection::class.simpleName-> {
+                    showGiustificheDisambiguationFragment()
                 }
                 AccountFragment::class.simpleName -> {
                     showAccountFragment()
@@ -593,8 +627,9 @@ class MainActivity : AppCompatActivity(){
         finish()
     }
 
-
-    override fun onBackPressed() {
-        //NOTHING
+    private val onBackPressedCallback = object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+            //nothing
+        }
     }
 }
